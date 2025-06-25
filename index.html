@@ -1,79 +1,87 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZOGE COIN | Official Page</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ZOGE Coin</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: url("https://i.ibb.co/PjyM8WV/zoge-banner.png") no-repeat center center fixed;
+      padding: 0;
+      background-image: url('https://i.ibb.co/6rVZNjN/zoge-bg.jpg'); /* رابط صورة الخلفية */
       background-size: cover;
+      background-position: center;
+      font-family: Arial, sans-serif;
       color: white;
       text-align: center;
     }
-    .overlay {
+
+    .content {
+      padding: 60px 20px;
       background-color: rgba(0, 0, 0, 0.6);
-      padding: 40px 20px;
+      min-height: 100vh;
     }
+
     h1 {
-      font-size: 48px;
-      margin-bottom: 10px;
+      font-size: 3em;
+      margin-bottom: 20px;
     }
-    .btn {
-      background-color: #1c89ff;
-      color: white;
-      padding: 14px 28px;
-      font-size: 16px;
-      margin: 20px 10px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-    .btn:hover {
-      background-color: #136bd2;
-    }
-    .contract-box {
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
       margin-top: 30px;
     }
-    .copy-input {
-      padding: 10px;
-      font-size: 14px;
-      width: 300px;
-      max-width: 80%;
+
+    .buttons a {
+      text-decoration: none;
+      color: white;
+      background: #0077ff;
+      padding: 15px 30px;
+      border-radius: 10px;
+      transition: background 0.3s;
+      font-weight: bold;
+    }
+
+    .buttons a:hover {
+      background: #0055cc;
+    }
+
+    .copy-contract {
+      margin-top: 30px;
+      background: #222;
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <div class="overlay">
-    <h1>ZOGE COIN</h1>
-    <p>Meme Coin on TON – Powered by the Community</p><a class="btn" href="https://stone.fi" target="_blank">Buy on StoneFi</a>
-<a class="btn" href="https://t.me/Zegcoinlanch" target="_blank">Join Telegram</a>
-<a class="btn" href="https://x.com/ammarYa22912552" target="_blank">Follow on Twitter</a>
+  <div class="content">
+    <h1>ZOGE COIN 🪙</h1>
+    <img src="https://i.ibb.co/ZccsZK3/zoge-logo.png" alt="ZOGE Logo" width="120" />
 
-<div class="contract-box">
-  <p>Token Contract Address:</p>
-  <input class="copy-input" type="text" value="EQDPo62Pq1a_yem4hPzBgAK48AJjPvxNAYHmTkMINfRMwZJs" id="contract" readonly />
-  <button class="btn" onclick="copyContract()">Copy</button>
-</div>
+    <div class="buttons">
+      <a href="https://stone.fi/swap" target="_blank">Buy on StoneFi</a>
+      <a href="https://t.me/Zegcoinlanch" target="_blank">Join Telegram</a>
+      <a href="https://x.com/ammarYa22912552" target="_blank">Follow on Twitter</a>
+    </div>
 
-<div class="roadmap">
-  <h2>Roadmap</h2>
-  <p>✅ Token Created</p>
-  <p>✅ Listing on StoneFi</p>
-  <p>🚀 Pump Phase</p>
-  <p>🔥 5% Burn Coming Soon</p>
-  <p>More updates soon...</p>
-</div>
+    <div class="copy-contract" onclick="copyContract()">
+      📋 Click to Copy Contract: <br>
+      <span id="contract">EQDPo62Pq1a_yem4hPzBgAK48AJjPvxNAYHmTkMINfRMwZJs</span>
+    </div>
+  </div>
 
-  </div>  <script>
+  <script>
     function copyContract() {
-      var copyText = document.getElementById("contract");
-      copyText.select();
-      copyText.setSelectionRange(0, 99999);
-      document.execCommand("copy");
-      alert("Contract address copied!");
+      const contract = document.getElementById("contract").innerText;
+      navigator.clipboard.writeText(contract);
+      alert("Contract copied to clipboard!");
     }
-  </script></body>
+  </script>
+</body>
 </html>
