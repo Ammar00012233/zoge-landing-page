@@ -1,56 +1,89 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZOGE Coin</title>
+    <title>Zoge Coin</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #1a1a1a; /* خلفية داكنة */
+            background: url('https://i.postimg.cc/3xZNhTTQ/IMG-20250618-160535-781.webp') no-repeat center center fixed;
+            background-size: cover;
             color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
             text-align: center;
             margin: 0;
+            padding: 20px;
         }
-        .header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
         }
         .logo {
-            max-width: 100px; /* مقاس الصورة الصغيرة */
+            max-width: 150px;
             height: auto;
-            margin-right: 10px;
+            margin-bottom: 20px;
         }
-        h1 {
-            margin: 0;
-            font-size: 2.5em;
-        }
-        a {
-            color: #00ff00; /* لون الروابط (أخضر) */
+        .buttons a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #1da1f2;
+            color: #fff;
             text-decoration: none;
-            font-size: 1.2em; /* تغيير حجم الروابط */
-            padding: 5px 10px; /* مسافة داخلية لتحسين الشكل */
+            border-radius: 5px;
+            font-size: 16px;
         }
-        a:hover {
-            text-decoration: underline; /* خط تحت الرابط لما تضغط */
-            background-color: #333; /* خلفية داكنة عند التحويل */
+        .buttons a:hover {
+            background-color: #0d8bd7;
+        }
+        .contract {
+            margin: 20px 0;
+            font-size: 14px;
+            word-wrap: break-word;
+        }
+        .contract input {
+            width: 80%;
+            padding: 5px;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+        }
+        .mini-game {
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .footer {
+            font-size: 12px;
+            color: #ccc;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <img src="https://i.ibb.co/XMmqQMD/file-000000003fac61f48ef4637aa4a9af00.png" alt="ZOGE Logo" class="logo">
-        <h1>عملة ZOGE</h1>
+    <div class="container">
+        <img src="https://i.postimg.cc/3xZNhTTQ/IMG-20250618-160535-781.webp" alt="Zoge Coin Logo" class="logo">
+        <h1>Welcome to Zoge Coin</h1>
+        <div class="buttons">
+            <a href="https://t.me/Zegcoinlanch">Join Telegram</a>
+            <a href="https://x.com/ammarYa22912552?t=eEpLLZyZRwCjoIEStZwpJA&s=09">Join Twitter</a>
+        </div>
+        <div class="contract">
+            <p>Contract Address:</p>
+            <input type="text" value="EQBXTMbijDs-ycbzdn2AS2EHGUor_a4ioTI9vknroTFHkwfo" readonly>
+        </div>
+        <div class="mini-game">
+            <p>Under Construction</p>
+            <!-- Placeholder for mini game -->
+            <div style="display: inline-block; border: 2px solid #fff; padding: 10px;">
+                [Mini Game Coming Soon]
+            </div>
+        </div>
+        <div class="footer">
+            <p>© 2025 Zoge Coin. All rights reserved.</p>
+        </div>
     </div>
-    <p>شبكة TON - إطلاق عادل على StoneFi</p>
-    <a href="https://t.me/Zegcoinlanch" target="_blank">زوروا قناتنا على التلجرام</a>
-    <br>
-    <a href="https://x.com/ammarYa22912552/status/1937614768824856842" target="_blank">زوروا تويتر</a>
 </body>
 </html>
