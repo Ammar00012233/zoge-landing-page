@@ -7,11 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url('https://i.ibb.co/XMmqQMD/file-000000003fac61f48ef4637aa4a9af00.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: #000; /* لون خلفي إذا الصورة فشلت */
+            background-color: #1a1a1a; /* خلفية داكنة بسيطة */
             color: #fff;
             display: flex;
             justify-content: center;
@@ -21,15 +17,27 @@
             text-align: center;
             margin: 0;
         }
-        .logo {
-            max-width: 200px;
-            height: auto;
+        .header {
+            display: flex;
+            align-items: center;
             margin-bottom: 20px;
+        }
+        .logo {
+            max-width: 100px; /* صورة صغيرة جنب الاسم */
+            height: auto;
+            margin-right: 10px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5em;
         }
     </style>
 </head>
 <body>
-    <h1>عملة ZOGE</h1>
+    <div class="header">
+        <img src="https://i.ibb.co/XMmqQMD/file-000000003fac61f48ef4637aa4a9af00.png" alt="ZOGE Logo" class="logo">
+        <h1>عملة ZOGE</h1>
+    </div>
     <p>شبكة TON - إطلاق عادل على StoneFi</p>
     <a href="https://t.me/Zegcoinlanch" target="_blank">زوروا قناتنا على التلجرام</a>
     <br>
