@@ -1,122 +1,116 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zoge Coin Game</title>
+  <title>Flappy ZOGE</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-      background: #111;
-      color: #fff;
       overflow: hidden;
+      background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
     }
     canvas {
       display: block;
       margin: 0 auto;
-      background: #222;
-    }
-    #gameOver {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-      display: none;
-    }
-    #restartBtn {
-      padding: 10px 20px;
-      background-color: #00ff88;
-      color: #000;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
+      background: url('https://i.imgur.com/NKO7yqf.png') no-repeat center center;
+      background-size: cover;
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="300"></canvas>
-  <div id="gameOver">
-    <h1>Game Over</h1>
-    <button id="restartBtn">Restart</button>
-  </div>  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const gameOverScreen = document.getElementById("gameOver");
-    const restartBtn = document.getElementById("restartBtn");
+<canvas id="gameCanvas" width="480" height="640"></canvas><script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-    let player = { x: 50, y: 250, width: 30, height: 30, vy: 0, jumping: false };
-    let obstacle = { x: 800, y: 250, width: 30, height: 30 };
-    let gravity = 1.5;
-    let gameRunning = true;
+const GRAVITY = 0.6;
+const FLAP = -10;
 
-    function drawPlayer() {
-      ctx.fillStyle = "#00ff88";
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-    }
+let zoge = {
+  x: 50,
+  y: 200,
+  width: 40,
+  height: 40,
+  velocity: 0
+};
 
-    function drawObstacle() {
-      ctx.fillStyle = "#ff4444";
-      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    }
+let pipes = [];
+let frame = 0;
+let score = 0;
+let gameOver = false;
 
-    function update() {
-      if (!gameRunning) return;
+function drawZoge() {
+  ctx.fillStyle = '#00ffcc';
+  ctx.beginPath();
+  ctx.arc(zoge.x, zoge.y, 20, 0, Math.PI * 2);
+  ctx.fill();
+}
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawPlayer();
-      drawObstacle();
+function drawPipes() {
+  ctx.fillStyle = '#ffffff';
+  pipes.forEach(pipe => {
+    ctx.fillRect(pipe.x, 0, 50, pipe.top);
+    ctx.fillRect(pipe.x, pipe.bottom, 50, canvas.height - pipe.bottom);
+  });
+}
 
-      // Gravity
-      player.y += player.vy;
-      player.vy += gravity;
-
-      // Ground
-      if (player.y >= 250) {
-        player.y = 250;
-        player.vy = 0;
-        player.jumping = false;
-      }
-
-      // Move obstacle
-      obstacle.x -= 6;
-      if (obstacle.x < -30) {
-        obstacle.x = 800 + Math.random() * 200;
-      }
-
-      // Collision
-      if (
-        player.x < obstacle.x + obstacle.width &&
-        player.x + player.width > obstacle.x &&
-        player.y < obstacle.y + obstacle.height &&
-        player.y + player.height > obstacle.y
-      ) {
-        gameRunning = false;
-        gameOverScreen.style.display = "block";
-      }
-
-      requestAnimationFrame(update);
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space" && !player.jumping) {
-        player.vy = -20;
-        player.jumping = true;
-      }
+function updatePipes() {
+  if (frame % 90 === 0) {
+    let top = Math.random() * (canvas.height / 2);
+    let gap = 140;
+    pipes.push({
+      x: canvas.width,
+      top: top,
+      bottom: top + gap
     });
+  }
 
-    restartBtn.onclick = () => {
-      player.y = 250;
-      player.vy = 0;
-      player.jumping = false;
-      obstacle.x = 800;
-      gameOverScreen.style.display = "none";
-      gameRunning = true;
-      update();
-    };
+  pipes.forEach(pipe => {
+    pipe.x -= 2;
+    if (pipe.x + 50 < 0) pipes.shift();
+  });
+}
 
-    update();
-  </script></body>
-</html>
+function checkCollision() {
+  pipes.forEach(pipe => {
+    if (
+      zoge.x < pipe.x + 50 &&
+      zoge.x + zoge.width > pipe.x &&
+      (zoge.y < pipe.top || zoge.y + zoge.height > pipe.bottom)
+    ) {
+      gameOver = true;
+    }
+  });
+
+  if (zoge.y + zoge.height > canvas.height || zoge.y < 0) {
+    gameOver = true;
+  }
+}
+
+function drawScore() {
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '24px Arial';
+  ctx.fillText(`Score: ${score}`, 10, 30);
+}
+
+function drawGameOver() {
+  ctx.fillStyle = '#ff0044';
+  ctx.font = '36px Arial';
+  ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
+  ctx.font = '20px Arial';
+  ctx.fillText('Click to play again', canvas.width / 2 - 90, canvas.height / 2 + 40);
+}
+
+function resetGame() {
+  zoge.y = 200;
+  zoge.velocity = 0;
+  pipes = [];
+  score = 0;
+  frame = 0;
+  gameOver = false;
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (!gameOver) {
+    zoge.velocity += GRAVITY;
+    zoge.y += zoge.velocity;
