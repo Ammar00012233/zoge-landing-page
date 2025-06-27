@@ -1,111 +1,122 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ZOGE Coin Game</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoge Coin Game</title>
   <style>
     body {
       margin: 0;
       padding: 0;
-      background: #000;
+      font-family: sans-serif;
+      background: #111;
       color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    h1 {
-      margin-top: 20px;
+      overflow: hidden;
     }
     canvas {
-      background: #111;
       display: block;
-      margin: 20px auto;
-      border: 2px solid #fff;
+      margin: 0 auto;
+      background: #222;
+    }
+    #gameOver {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      display: none;
+    }
+    #restartBtn {
+      padding: 10px 20px;
+      background-color: #00ff88;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h1>🚧 Game Under Development 🚧</h1>
-  <canvas id="game" width="800" height="200"></canvas>  <script>
-    const canvas = document.getElementById("game");
+  <canvas id="gameCanvas" width="800" height="300"></canvas>
+  <div id="gameOver">
+    <h1>Game Over</h1>
+    <button id="restartBtn">Restart</button>
+  </div>  <script>
+    const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
+    const gameOverScreen = document.getElementById("gameOver");
+    const restartBtn = document.getElementById("restartBtn");
 
-    let alien = {
-      x: 50,
-      y: 160,
-      width: 30,
-      height: 30,
-      dy: 0,
-      jumping: false
-    };
+    let player = { x: 50, y: 250, width: 30, height: 30, vy: 0, jumping: false };
+    let obstacle = { x: 800, y: 250, width: 30, height: 30 };
+    let gravity = 1.5;
+    let gameRunning = true;
 
-    let gravity = 1;
-    let obstacles = [];
-    let frame = 0;
-    let score = 0;
-
-    function drawAlien() {
-      ctx.fillStyle = "lime";
-      ctx.fillRect(alien.x, alien.y, alien.width, alien.height);
+    function drawPlayer() {
+      ctx.fillStyle = "#00ff88";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
 
-    function drawObstacle(obs) {
-      ctx.fillStyle = "red";
-      ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+    function drawObstacle() {
+      ctx.fillStyle = "#ff4444";
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     }
 
-    function updateGame() {
+    function update() {
+      if (!gameRunning) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawAlien();
+      drawPlayer();
+      drawObstacle();
 
-      alien.y += alien.dy;
-      if (alien.y + alien.height < canvas.height) {
-        alien.dy += gravity;
-      } else {
-        alien.dy = 0;
-        alien.y = canvas.height - alien.height;
-        alien.jumping = false;
+      // Gravity
+      player.y += player.vy;
+      player.vy += gravity;
+
+      // Ground
+      if (player.y >= 250) {
+        player.y = 250;
+        player.vy = 0;
+        player.jumping = false;
       }
 
-      if (frame % 100 === 0) {
-        obstacles.push({
-          x: canvas.width,
-          y: 170,
-          width: 20,
-          height: 30
-        });
+      // Move obstacle
+      obstacle.x -= 6;
+      if (obstacle.x < -30) {
+        obstacle.x = 800 + Math.random() * 200;
       }
 
-      obstacles.forEach((obs, index) => {
-        obs.x -= 4;
-        drawObstacle(obs);
+      // Collision
+      if (
+        player.x < obstacle.x + obstacle.width &&
+        player.x + player.width > obstacle.x &&
+        player.y < obstacle.y + obstacle.height &&
+        player.y + player.height > obstacle.y
+      ) {
+        gameRunning = false;
+        gameOverScreen.style.display = "block";
+      }
 
-        if (
-          alien.x < obs.x + obs.width &&
-          alien.x + alien.width > obs.x &&
-          alien.y < obs.y + obs.height &&
-          alien.y + alien.height > obs.y
-        ) {
-          alert("Game Over! Score: " + score);
-          document.location.reload();
-        }
-
-        if (obs.x + obs.width < 0) {
-          obstacles.splice(index, 1);
-          score++;
-        }
-      });
-
-      frame++;
-      requestAnimationFrame(updateGame);
+      requestAnimationFrame(update);
     }
 
-    document.addEventListener("keydown", function (e) {
-      if (e.code === "Space" && !alien.jumping) {
-        alien.dy = -15;
-        alien.jumping = true;
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && !player.jumping) {
+        player.vy = -20;
+        player.jumping = true;
       }
     });
 
-    updateGame();
+    restartBtn.onclick = () => {
+      player.y = 250;
+      player.vy = 0;
+      player.jumping = false;
+      obstacle.x = 800;
+      gameOverScreen.style.display = "none";
+      gameRunning = true;
+      update();
+    };
+
+    update();
   </script></body>
 </html>
