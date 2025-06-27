@@ -1,151 +1,177 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Flappy ZOGE</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Zoge Mini Game</title>
   <style>
-    body {
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
     }
     canvas {
       display: block;
-      margin: 0 auto;
-      background: url('https://i.imgur.com/NKO7yqf.png') no-repeat center center;
-      background-size: cover;
+      margin: auto;
+      background: linear-gradient(#001f3f, #003366);
+      width: 100vw;
+      height: 100vh;
+    }
+    #restartBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 16px 28px;
+      font-size: 18px;
+      background: #00d084;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+      z-index: 10;
+    }
+    #title {
+      position: absolute;
+      top: 20px;
+      width: 100%;
+      text-align: center;
+      font-size: 24px;
+      z-index: 5;
     }
   </style>
 </head>
 <body>
-<canvas id="gameCanvas" width="480" height="640"></canvas><script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  <div id="title">👾 Zoge Mini Game – قيد التطوير 👾</div>
+  <canvas id="game"></canvas>
+  <button id="restartBtn">إعادة اللعب</button>
 
-const GRAVITY = 0.6;
-const FLAP = -10;
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
 
-let zoge = {
-  x: 50,
-  y: 200,
-  width: 40,
-  height: 40,
-  velocity: 0
-};
+    let player = {
+      x: 50,
+      y: height - 100,
+      width: 50,
+      height: 50,
+      color: "#00ffcc",
+      dy: 0,
+      gravity: 1,
+      jump: -18,
+      grounded: true
+    };
 
-let pipes = [];
-let frame = 0;
-let score = 0;
-let gameOver = false;
+    let obstacle = {
+      x: width,
+      y: height - 50,
+      width: 40,
+      height: 40,
+      color: "#ff4136",
+      speed: 8
+    };
 
-function drawZoge() {
-  ctx.fillStyle = '#00ffcc';
-  ctx.beginPath();
-  ctx.arc(zoge.x, zoge.y, 20, 0, Math.PI * 2);
-  ctx.fill();
-}
+    let gameOver = false;
+    const restartBtn = document.getElementById("restartBtn");
 
-function drawPipes() {
-  ctx.fillStyle = '#ffffff';
-  pipes.forEach(pipe => {
-    ctx.fillRect(pipe.x, 0, 50, pipe.top);
-    ctx.fillRect(pipe.x, pipe.bottom, 50, canvas.height - pipe.bottom);
-  });
-}
-
-function updatePipes() {
-  if (frame % 90 === 0) {
-    let top = Math.random() * (canvas.height / 2);
-    let gap = 140;
-    pipes.push({
-      x: canvas.width,
-      top: top,
-      bottom: top + gap
-    });
-  }
-
-  pipes.forEach(pipe => {
-    pipe.x -= 2;
-    if (pipe.x + 50 < 0) pipes.shift();
-  });
-}
-
-function checkCollision() {
-  pipes.forEach(pipe => {
-    if (
-      zoge.x < pipe.x + 50 &&
-      zoge.x + zoge.width > pipe.x &&
-      (zoge.y < pipe.top || zoge.y + zoge.height > pipe.bottom)
-    ) {
-      gameOver = true;
+    function drawPlayer() {
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
     }
-  });
 
-  if (zoge.y + zoge.height > canvas.height || zoge.y < 0) {
-    gameOver = true;
-  }
-}
+    function drawObstacle() {
+      ctx.fillStyle = obstacle.color;
+      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    }
 
-function drawScore() {
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '24px Arial';
-  ctx.fillText(`Score: ${score}`, 10, 30);
-}
+    function resetGame() {
+      player.y = height - 100;
+      player.dy = 0;
+      player.grounded = true;
+      obstacle.x = width;
+      gameOver = false;
+      restartBtn.style.display = "none";
+      animate();
+    }
 
-function drawGameOver() {
-  ctx.fillStyle = '#ff0044';
-  ctx.font = '36px Arial';
-  ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2);
-  ctx.font = '20px Arial';
-  ctx.fillText('Click to play again', canvas.width / 2 - 90, canvas.height / 2 + 40);
-}
+    function checkCollision() {
+      return (
+        player.x < obstacle.x + obstacle.width &&
+        player.x + player.width > obstacle.x &&
+        player.y < obstacle.y + obstacle.height &&
+        player.y + player.height > obstacle.y
+      );
+    }
 
-function resetGame() {
-  zoge.y = 200;
-  zoge.velocity = 0;
-  pipes = [];
-  score = 0;
-  frame = 0;
-  gameOver = false;
-}
+    function animate() {
+      if (gameOver) return;
 
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, width, height);
+      drawPlayer();
+      drawObstacle();
 
-  if (!gameOver) {
-    zoge.velocity += GRAVITY;
-    zoge.y += zoge.velocity;
-    frame++;
-    score = Math.floor(frame / 10);
+      player.y += player.dy;
+      player.dy += player.gravity;
 
-    updatePipes();
-    checkCollision();
+      if (player.y + player.height > height) {
+        player.y = height - player.height;
+        player.dy = 0;
+        player.grounded = true;
+      }
 
-    drawPipes();
-    drawZoge();
-    drawScore();
-  } else {
-    drawGameOver();
-  }
+      obstacle.x -= obstacle.speed;
+      if (obstacle.x + obstacle.width < 0) {
+        obstacle.x = width + Math.random() * 500;
+      }
 
-  requestAnimationFrame(gameLoop);
-}
+      if (checkCollision()) {
+        gameOver = true;
+        restartBtn.style.display = "block";
+        return;
+      }
 
-document.addEventListener('keydown', function (e) {
-  if (e.code === 'Space' && !gameOver) {
-    zoge.velocity = FLAP;
-  } else if (gameOver) {
-    resetGame();
-  }
-});
+      requestAnimationFrame(animate);
+    }
 
-document.addEventListener('click', function () {
-  if (!gameOver) {
-    zoge.velocity = FLAP;
-  } else {
-    resetGame();
-  }
-});
+    function jump() {
+      if (player.grounded) {
+        player.dy = player.jump;
+        player.grounded = false;
+      }
+    }
 
-gameLoop();
-</script></body>
+    // Controls
+    window.addEventListener("keydown", e => {
+      if (e.code === "Space" || e.code === "ArrowUp") jump();
+    });
+
+    canvas.addEventListener("touchstart", jump);
+
+    restartBtn.addEventListener("click", resetGame);
+
+    // Prevent double-tap zoom
+    document.addEventListener("touchstart", function (event) {
+      if (event.touches.length > 1) event.preventDefault();
+    }, { passive: false });
+
+    let lastTouchEnd = 0;
+    document.addEventListener("touchend", function (event) {
+      let now = new Date().getTime();
+      if (now - lastTouchEnd <= 300) event.preventDefault();
+      lastTouchEnd = now;
+    }, false);
+
+    animate();
+  </script>
+</body>
 </html>
