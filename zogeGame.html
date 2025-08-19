@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZOGE Jump Game</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * {
@@ -20,40 +21,42 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 10px;
+      overflow: hidden;
     }
     .container {
       text-align: center;
-      max-width: 800px;
+      max-width: 100%;
       width: 100%;
     }
     canvas {
       background-color: rgba(255, 255, 255, 0.95);
       border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      margin-bottom: 10px;
       max-width: 100%;
+      width: 100%;
     }
     h1 {
-      font-size: 2.5rem;
+      font-size: 1.8rem;
       color: #ff6b6b;
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
     p {
-      font-size: 1.2rem;
+      font-size: 1rem;
       color: #fff;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     .btn {
       display: inline-block;
       text-decoration: none;
       background-color: #0088cc;
       color: #fff;
-      padding: 12px 25px;
+      padding: 10px 20px;
       border-radius: 50px;
-      font-size: 1.1rem;
-      margin: 10px;
+      font-size: 0.9rem;
+      margin: 5px;
       transition: background-color 0.3s, transform 0.3s;
     }
     .btn:hover {
@@ -66,11 +69,11 @@
     .btn.restart:hover {
       background-color: #e55a5a;
     }
-    .btn.home {
+    .btn.share {
       background-color: #ffd93d;
       color: #333;
     }
-    .btn.home:hover {
+    .btn.share:hover {
       background-color: #e6c029;
     }
   </style>
@@ -78,39 +81,41 @@
 <body>
   <div class="container">
     <h1>ZOGE Jump</h1>
-    <p>Help ZOGE jump over obstacles and collect points! Press Space or tap the screen to jump.</p>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <p>Tap the screen or press Space to jump! Avoid obstacles and score points.</p>
+    <canvas id="gameCanvas"></canvas>
     <div>
-      <a class="btn" href="https://t.me/Zegcoinlanch" target="_blank">Telegram</a>
-      <a class="btn" href="https://x.com/ZogeC55380?t=PLt1Daof4G5vGNbbqHYGdw&s=09" target="_blank">Twitter</a>
       <a class="btn restart" href="#" onclick="restartGame()">Restart Game</a>
-      <a class="btn home" href="index.html">Back to Home</a>
+      <a class="btn share" href="#" onclick="shareScore()">Share Score</a>
     </div>
   </div>
 
   <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Adjust canvas for mobile devices
-    if (window.innerWidth < 800) {
-      canvas.width = window.innerWidth - 40;
-    }
+    // Adjust canvas for mobile
+    canvas.width = Math.min(window.innerWidth - 20, 600);
+    canvas.height = Math.min(window.innerHeight * 0.6, 400);
 
     // Load ZOGE logo
     const zogeImg = new Image();
     zogeImg.src = 'https://i.postimg.cc/W4cH71MG/grok-image-4kk3fy.jpg';
 
     // Game variables
-    let zoge = { x: 50, y: 300, width: 50, height: 50, dy: 0, gravity: 0.5, jumpPower: -12, isJumping: false };
+    let zoge = { x: 50, y: 300, width: 40, height: 40, dy: 0, gravity: 0.5, jumpPower: -10, isJumping: false };
     let obstacles = [];
     let score = 0;
+    let highScore = localStorage.getItem('zogeHighScore') || 0;
     let gameOver = false;
     let frameCount = 0;
-    const obstacleWidth = 30;
-    const obstacleHeight = 50;
-    const obstacleSpeed = 4;
-    const obstacleFrequency = 80;
+    const obstacleWidth = 25;
+    const obstacleHeight = 40;
+    const obstacleSpeed = 3;
+    const obstacleFrequency = 90;
 
     // Handle input
     document.addEventListener('keydown', (e) => {
@@ -136,7 +141,7 @@
     function createObstacle() {
       obstacles.push({
         x: canvas.width,
-        y: canvas.height - obstacleHeight,
+        y: canvas.height - obstacleHeight - 50,
         width: obstacleWidth,
         height: obstacleHeight
       });
@@ -151,9 +156,17 @@
              zoge.y + zoge.height - padding > obstacle.y;
     }
 
+    // Share score
+    function shareScore() {
+      if (gameOver) {
+        tg.sendData(JSON.stringify({ score: score, user: tg.initDataUnsafe.user }));
+        tg.showAlert(`Your score: ${score}! Shared to the bot.`);
+      }
+    }
+
     // Restart game
     function restartGame() {
-      zoge = { x: 50, y: 300, width: 50, height: 50, dy: 0, gravity: 0.5, jumpPower: -12, isJumping: false };
+      zoge = { x: 50, y: 300, width: 40, height: 40, dy: 0, gravity: 0.5, jumpPower: -10, isJumping: false };
       obstacles = [];
       score = 0;
       gameOver = false;
@@ -167,10 +180,15 @@
         ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#fff';
-        ctx.font = '30px Poppins';
+        ctx.font = '24px Poppins';
         ctx.textAlign = 'center';
-        ctx.fillText('Game Over! Score: ' + score, canvas.width / 2, canvas.height / 2);
-        ctx.fillText('Press Restart to Play Again', canvas.width / 2, canvas.height / 2 + 40);
+        ctx.fillText(`Game Over! Score: ${score}`, canvas.width / 2, canvas.height / 2);
+        ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 30);
+        ctx.fillText('Tap Restart to Play Again', canvas.width / 2, canvas.height / 2 + 60);
+        if (score > highScore) {
+          highScore = score;
+          localStorage.setItem('zogeHighScore', highScore);
+        }
         return;
       }
 
@@ -191,6 +209,9 @@
       }
       if (zogeImg.complete) {
         ctx.drawImage(zogeImg, zoge.x, zoge.y, zoge.width, zoge.height);
+      } else {
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fillRect(zoge.x, zoge.y, zoge.width, zoge.height);
       }
 
       // Generate obstacles
@@ -206,19 +227,24 @@
         ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
         if (checkCollision(zoge, obstacle)) {
           gameOver = true;
+          tg.sendData(JSON.stringify({ score: score, user: tg.initDataUnsafe.user }));
         }
       });
 
       // Draw score
       ctx.fillStyle = '#333';
-      ctx.font = '20px Poppins';
+      ctx.font = '16px Poppins';
       ctx.textAlign = 'left';
-      ctx.fillText('Score: ' + score, 10, 30);
+      ctx.fillText(`Score: ${score}`, 10, 20);
+      ctx.fillText(`High Score: ${highScore}`, 10, 40);
 
       // Increment score
-      if (frameCount % 5 === 0) {
-        score++;
-      }
+      obstacles.forEach(obstacle => {
+        if (obstacle.x + obstacle.width < zoge.x && !obstacle.scored) {
+          score += 10;
+          obstacle.scored = true;
+        }
+      });
 
       frameCount++;
       requestAnimationFrame(gameLoop);
@@ -230,8 +256,6 @@
     };
     zogeImg.onerror = () => {
       console.error('Failed to load ZOGE image');
-      ctx.fillStyle = '#ff6b6b';
-      ctx.fillRect(zoge.x, zoge.y, zoge.width, zoge.height);
       gameLoop();
     };
   </script>
