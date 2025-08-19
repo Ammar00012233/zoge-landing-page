@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZOGE Jump Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      text-align: center;
+      max-width: 800px;
+      width: 100%;
+    }
+    canvas {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+      max-width: 100%;
+    }
+    h1 {
+      font-size: 2.5rem;
+      color: #ff6b6b;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      margin-bottom: 15px;
+    }
+    p {
+      font-size: 1.2rem;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      background-color: #0088cc;
+      color: #fff;
+      padding: 12px 25px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      margin: 10px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+    .btn:hover {
+      background-color: #006699;
+      transform: translateY(-3px);
+    }
+    .btn.restart {
+      background-color: #ff6b6b;
+    }
+    .btn.restart:hover {
+      background-color: #e55a5a;
+    }
+    .btn.home {
+      background-color: #ffd93d;
+      color: #333;
+    }
+    .btn.home:hover {
+      background-color: #e6c029;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ZOGE Jump</h1>
+    <p>Help ZOGE jump over obstacles and collect points! Press Space or tap the screen to jump.</p>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div>
+      <a class="btn" href="https://t.me/Zegcoinlanch" target="_blank">Telegram</a>
+      <a class="btn" href="https://x.com/ZogeC55380?t=PLt1Daof4G5vGNbbqHYGdw&s=09" target="_blank">Twitter</a>
+      <a class="btn restart" href="#" onclick="restartGame()">Restart Game</a>
+      <a class="btn home" href="index.html">Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Adjust canvas for mobile devices
+    if (window.innerWidth < 800) {
+      canvas.width = window.innerWidth - 40;
+    }
+
+    // Load ZOGE logo
+    const zogeImg = new Image();
+    zogeImg.src = 'https://i.postimg.cc/W4cH71MG/grok-image-4kk3fy.jpg';
+
+    // Game variables
+    let zoge = { x: 50, y: 300, width: 50, height: 50, dy: 0, gravity: 0.5, jumpPower: -12, isJumping: false };
+    let obstacles = [];
+    let score = 0;
+    let gameOver = false;
+    let frameCount = 0;
+    const obstacleWidth = 30;
+    const obstacleHeight = 50;
+    const obstacleSpeed = 4;
+    const obstacleFrequency = 80;
+
+    // Handle input
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !gameOver) {
+        jump();
+      }
+    });
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (!gameOver) {
+        jump();
+      }
+    });
+
+    function jump() {
+      if (!zoge.isJumping) {
+        zoge.dy = zoge.jumpPower;
+        zoge.isJumping = true;
+      }
+    }
+
+    // Generate obstacles
+    function createObstacle() {
+      obstacles.push({
+        x: canvas.width,
+        y: canvas.height - obstacleHeight,
+        width: obstacleWidth,
+        height: obstacleHeight
+      });
+    }
+
+    // Collision detection
+    function checkCollision(zoge, obstacle) {
+      const padding = 5;
+      return zoge.x + padding < obstacle.x + obstacle.width &&
+             zoge.x + zoge.width - padding > obstacle.x &&
+             zoge.y + padding < obstacle.y + obstacle.height &&
+             zoge.y + zoge.height - padding > obstacle.y;
+    }
+
+    // Restart game
+    function restartGame() {
+      zoge = { x: 50, y: 300, width: 50, height: 50, dy: 0, gravity: 0.5, jumpPower: -12, isJumping: false };
+      obstacles = [];
+      score = 0;
+      gameOver = false;
+      frameCount = 0;
+      gameLoop();
+    }
+
+    // Game loop
+    function gameLoop() {
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '30px Poppins';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over! Score: ' + score, canvas.width / 2, canvas.height / 2);
+        ctx.fillText('Press Restart to Play Again', canvas.width / 2, canvas.height / 2 + 40);
+        return;
+      }
+
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw ground
+      ctx.fillStyle = '#333';
+      ctx.fillRect(0, canvas.height - 50, canvas.width, 50);
+
+      // Update ZOGE
+      zoge.dy += zoge.gravity;
+      zoge.y += zoge.dy;
+      if (zoge.y > canvas.height - zoge.height - 50) {
+        zoge.y = canvas.height - zoge.height - 50;
+        zoge.dy = 0;
+        zoge.isJumping = false;
+      }
+      if (zogeImg.complete) {
+        ctx.drawImage(zogeImg, zoge.x, zoge.y, zoge.width, zoge.height);
+      }
+
+      // Generate obstacles
+      if (frameCount % obstacleFrequency === 0) {
+        createObstacle();
+      }
+
+      // Update and draw obstacles
+      obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+      obstacles.forEach(obstacle => {
+        obstacle.x -= obstacleSpeed;
+        ctx.fillStyle = '#ff6b6b';
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        if (checkCollision(zoge, obstacle)) {
+          gameOver = true;
+        }
+      });
+
+      // Draw score
+      ctx.fillStyle = '#333';
+      ctx.font = '20px Poppins';
+      ctx.textAlign = 'left';
+      ctx.fillText('Score: ' + score, 10, 30);
+
+      // Increment score
+      if (frameCount % 5 === 0) {
+        score++;
+      }
+
+      frameCount++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Start game when image loads
+    zogeImg.onload = () => {
+      gameLoop();
+    };
+    zogeImg.onerror = () => {
+      console.error('Failed to load ZOGE image');
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillRect(zoge.x, zoge.y, zoge.width, zoge.height);
+      gameLoop();
+    };
+  </script>
+</body>
+</html>
