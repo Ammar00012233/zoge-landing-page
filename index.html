@@ -1,31 +1,35 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZOGE Meme Coin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     body {
-      font-family: 'Cairo', sans-serif;
-      text-align: center;
+      font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #ff6b6b, #ffd93d);
       color: #333;
-      margin: 0;
-      padding: 40px 20px;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
     .container {
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.95);
       padding: 40px;
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       max-width: 600px;
       width: 100%;
+      text-align: center;
       animation: fadeIn 1s ease-in-out;
     }
     @keyframes fadeIn {
@@ -44,14 +48,15 @@
     }
     .title {
       font-size: 2.5rem;
-      margin: 10px 0;
       color: #ff6b6b;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      margin-bottom: 15px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
     }
     .desc {
       font-size: 1.2rem;
-      margin-bottom: 30px;
       line-height: 1.6;
+      margin-bottom: 30px;
+      color: #555;
     }
     .btn {
       display: inline-block;
@@ -64,24 +69,27 @@
       margin: 10px;
       transition: background-color 0.3s, transform 0.3s;
     }
-    .btn.twitter {
-      background-color: #1DA1F2;
-    }
     .btn:hover {
       background-color: #006699;
       transform: translateY(-3px);
     }
+    .btn.twitter {
+      background-color: #1DA1F2;
+    }
     .btn.twitter:hover {
       background-color: #0c85d0;
     }
-    .social-links {
-      margin-top: 20px;
+    .btn.game {
+      background-color: #ff6b6b;
+    }
+    .btn.game:hover {
+      background-color: #e55a5a;
     }
     footer {
-      margin-top: 40px;
+      margin-top: 30px;
       font-size: 0.9rem;
       color: #fff;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
     }
   </style>
 </head>
@@ -89,12 +97,13 @@
   <div class="container">
     <img class="logo" src="https://i.postimg.cc/W4cH71MG/grok-image-4kk3fy.jpg" alt="ZOGE Logo">
     <h1 class="title">ZOGE Meme Coin</h1>
-    <p class="desc">عملة ميم ممتعة تعيش على تيليجرام وتويتر! انضم إلينا للحصول على أحدث الأخبار والمسابقات والمزيد من المتعة مع مجتمع ZOGE الرائع.</p>
+    <p class="desc">The ultimate meme coin thriving on Telegram and Twitter! Join the ZOGE community for fun, updates, and exciting giveaways.</p>
     <div class="social-links">
-      <a class="btn" href="https://t.me/Zegcoinlanch" target="_blank">تيليجرام</a>
-      <a class="btn twitter" href="https://x.com/ZogeC55380?t=PLt1Daof4G5vGNbbqHYGdw&s=09" target="_blank">تويتر</a>
+      <a class="btn" href="https://t.me/Zegcoinlanch" target="_blank">Telegram</a>
+      <a class="btn twitter" href="https://x.com/ZogeC55380?t=PLt1Daof4G5vGNbbqHYGdw&s=09" target="_blank">Twitter</a>
+      <a class="btn game" href="zoge-jump.html">Play ZOGE Jump</a>
     </div>
   </div>
-  <footer>© 2025 ZOGE Meme Coin - جميع الحقوق محفوظة</footer>
+  <footer>© 2025 ZOGE Meme Coin - All Rights Reserved</footer>
 </body>
 </html>
