@@ -19,18 +19,28 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       padding: 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    #particles-js {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
     }
     .container {
       background-color: rgba(255, 255, 255, 0.95);
       padding: 40px;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      max-width: 600px;
+      max-width: 800px;
       width: 100%;
       text-align: center;
       animation: fadeIn 1s ease-in-out;
+      margin-bottom: 40px;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
@@ -44,7 +54,7 @@
       transition: transform 0.3s;
     }
     .logo:hover {
-      transform: scale(1.1);
+      transform: scale(1.1) rotate(10deg);
     }
     .title {
       font-size: 2.5rem;
@@ -57,6 +67,84 @@
       line-height: 1.6;
       margin-bottom: 30px;
       color: #555;
+    }
+    .section {
+      margin: 40px 0;
+      padding: 20px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+    .section h2 {
+      font-size: 1.8rem;
+      color: #ff6b6b;
+      margin-bottom: 15px;
+    }
+    .section p {
+      font-size: 1rem;
+      color: #555;
+      line-height: 1.6;
+    }
+    .roadmap {
+      position: relative;
+      padding: 20px 0;
+    }
+    .roadmap::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 4px;
+      height: 100%;
+      background: #ff6b6b;
+      transform: translateX(-50%);
+    }
+    .roadmap-item {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      position: relative;
+      width: 100%;
+      animation: slideIn 0.5s ease-in-out;
+    }
+    .roadmap-item:nth-child(odd) {
+      justify-content: flex-end;
+    }
+    .roadmap-item:nth-child(even) {
+      justify-content: flex-start;
+    }
+    .roadmap-item .content {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 10px;
+      width: 45%;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+    }
+    .roadmap-item .content:hover {
+      transform: translateY(-5px);
+    }
+    .roadmap-item .content h3 {
+      font-size: 1.2rem;
+      color: #ff6b6b;
+      margin-bottom: 10px;
+    }
+    .roadmap-item .content p {
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .roadmap-item .dot {
+      width: 20px;
+      height: 20px;
+      background: #ffd93d;
+      border-radius: 50%;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 3px solid #ff6b6b;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
     }
     .btn {
       display: inline-block;
@@ -85,6 +173,12 @@
     .btn.game:hover {
       background-color: #e55a5a;
     }
+    .play-now {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
     footer {
       margin-top: 30px;
       font-size: 0.9rem;
@@ -94,16 +188,76 @@
   </style>
 </head>
 <body>
+  <div id="particles-js"></div>
   <div class="container">
     <img class="logo" src="https://i.postimg.cc/W4cH71MG/grok-image-4kk3fy.jpg" alt="ZOGE Logo">
     <h1 class="title">ZOGE Meme Coin</h1>
-    <p class="desc">The ultimate meme coin thriving on Telegram and Twitter! Join the ZOGE community for fun, updates, and exciting giveaways.</p>
+    <p class="desc">The ultimate meme coin thriving on decentralized platforms, Telegram, and Twitter! Join the ZOGE community for fun, updates, and a decentralized crypto adventure.</p>
     <div class="social-links">
       <a class="btn" href="https://t.me/Zegcoinlanch" target="_blank">Telegram</a>
       <a class="btn twitter" href="https://x.com/ZogeC55380?t=PLt1Daof4G5vGNbbqHYGdw&s=09" target="_blank">Twitter</a>
+    </div>
+    <div class="play-now">
       <a class="btn game" href="zogeGame.html">Play ZOGE Jump</a>
+      <a class="btn game" href="zogeSnake.html">Play ZOGE Snake</a>
+    </div>
+
+    <!-- About ZOGE Section -->
+    <div class="section">
+      <h2>About ZOGE</h2>
+      <p>ZOGE is the meme coin you didn't know you needed! Built for the decentralized world, ZOGE thrives on platforms like PancakeSwap and Uniswap, bringing memes, community vibes, and crypto freedom together. Join us for epic giveaways and a ride to the moon!</p>
+    </div>
+
+    <!-- Roadmap Section -->
+    <div class="section">
+      <h2>Roadmap</h2>
+      <div class="roadmap">
+        <div class="roadmap-item">
+          <div class="dot"></div>
+          <div class="content">
+            <h3>Q1 2025: Initial Launch</h3>
+            <p>Launch ZOGE on decentralized platforms like PancakeSwap. Build a strong community on Telegram and Twitter, and release fun games like ZOGE Jump and ZOGE Snake!</p>
+          </div>
+        </div>
+        <div class="roadmap-item">
+          <div class="dot"></div>
+          <div class="content">
+            <h3>Q2 2025: Liquidity & Growth</h3>
+            <p>Add liquidity pools on major DEXes, host community events, and expand to other chains like Ethereum or Solana.</p>
+          </div>
+        </div>
+        <div class="roadmap-item">
+          <div class="dot"></div>
+          <div class="content">
+            <h3>Q3 2025: Global Domination</h3>
+            <p>Partner with influencers, launch marketing campaigns, and explore listings on more decentralized platforms to take ZOGE to the moon!</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <footer>© 2025 ZOGE Meme Coin - All Rights Reserved</footer>
+
+  <!-- Particles.js -->
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <script>
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 80, density: { enable: true, value_area: 800 } },
+        color: { value: "#ffffff" },
+        shape: { type: "circle" },
+        opacity: { value: 0.5, random: false },
+        size: { value: 3, random: true },
+        line_linked: { enable: true, distance: 150, color: "#ffffff", opacity: 0.4, width: 1 },
+        move: { enable: true, speed: 2, direction: "none", random: false, straight: false, out_mode: "out" }
+      },
+      interactivity: {
+        detect_on: "canvas",
+        events: { onhover: { enable: true, mode: "repulse" }, onclick: { enable: true, mode: "push" }, resize: true },
+        modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
+      },
+      retina_detect: true
+    });
+  </script>
 </body>
 </html>
