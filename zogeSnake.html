@@ -65,13 +65,44 @@
     .btn.restart:hover {
       background-color: #e55a5a;
     }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .control-btn {
+      background-color: #ffd93d;
+      color: #333;
+      border: none;
+      padding: 15px;
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+    .control-btn:hover {
+      background-color: #e6c029;
+      transform: scale(1.1);
+    }
+    .control-btn:active {
+      background-color: #d4a017;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>ZOGE Snake</h1>
-    <p>Use arrow keys to move the dragon snake. Eat hearts to grow, avoid walls and obstacles. Levels get harder!</p>
+    <p>Use buttons or arrow keys to move the dragon snake. Eat hearts to grow, avoid walls and obstacles. Levels get harder!</p>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="controls">
+      <button class="control-btn" onclick="moveUp()">↑</button>
+      <div>
+        <button class="control-btn" onclick="moveLeft()">←</button>
+        <button class="control-btn" onclick="moveDown()">↓</button>
+        <button class="control-btn" onclick="moveRight()">→</button>
+      </div>
+    </div>
     <a class="btn restart" href="#" onclick="restartGame()">Restart Game</a>
   </div>
 
@@ -153,6 +184,10 @@
     function generateFood() {
       food.x = Math.floor(Math.random() * (canvas.width / blockSize));
       food.y = Math.floor(Math.random() * (canvas.height / blockSize));
+      // Ensure food doesn't spawn on snake or obstacles
+      if (snake.some(part => part.x === food.x && part.y === food.y) || obstacles.some(ob => ob.x === food.x && ob.y === food.y)) {
+        generateFood();
+      }
     }
 
     // Level up
@@ -234,11 +269,24 @@
 
     // Controls
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowUp' && dy === 0) { dy = -1; dx = 0; }
-      if (e.key === 'ArrowDown' && dy === 0) { dy = 1; dx = 0; }
-      if (e.key === 'ArrowLeft' && dx === 0) { dx = -1; dy = 0; }
-      if (e.key === 'ArrowRight' && dx === 0) { dx = 1; dy = 0; }
+      if (e.key === 'ArrowUp' && dy === 0) { moveUp(); }
+      if (e.key === 'ArrowDown' && dy === 0) { moveDown(); }
+      if (e.key === 'ArrowLeft' && dx === 0) { moveLeft(); }
+      if (e.key === 'ArrowRight' && dx === 0) { moveRight(); }
     });
+
+    function moveUp() {
+      if (dy === 0) { dy = -1; dx = 0; }
+    }
+    function moveDown() {
+      if (dy === 0) { dy = 1; dx = 0; }
+    }
+    function moveLeft() {
+      if (dx === 0) { dx = -1; dy = 0; }
+    }
+    function moveRight() {
+      if (dx === 0) { dx = 1; dy = 0; }
+    }
 
     // Restart game
     function restartGame() {
