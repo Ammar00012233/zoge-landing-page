@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ZOGE Coin Hunt</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      touch-action: manipulation; /* Improve touch responsiveness */
+    }
+    .container {
+      text-align: center;
+      max-width: 100%;
+      width: 100%;
+    }
+    canvas {
+      background-color: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      margin-bottom: 20px;
+      max-width: 100%;
+      width: 100%;
+      height: auto; /* Responsive height */
+    }
+    h1 {
+      font-size: 2rem; /* Smaller for mobile */
+      color: #ff6b6b;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1rem; /* Smaller for mobile */
+      color: #fff;
+      margin-bottom: 15px;
+    }
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      background-color: #0088cc;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 50px;
+      font-size: 1rem;
+      margin: 5px;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+    .btn:hover {
+      background-color: #006699;
+      transform: translateY(-3px);
+    }
+    .btn.restart {
+      background-color: #ff6b6b;
+    }
+    .btn.restart:hover {
+      background-color: #e55a5a;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap; /* Wrap for mobile */
+      margin-bottom: 15px;
+    }
+    .control-btn {
+      background-color: #ffd93d;
+      color: #333;
+      border: none;
+      padding: 12px;
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s;
+    }
+    .control-btn:hover {
+      background-color: #e6c029;
+      transform: scale(1.1);
+    }
+    .control-btn:active {
+      background-color: #d4a017;
+    }
+    @media (max-width: 480px) {
+      canvas {
+        width: 90%; /* Adjust for smaller screens */
+      }
+      h1 { font-size: 1.5rem; }
+      p { font-size: 0.9rem; }
+      .control-btn { padding: 10px; font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ZOGE Coin Hunt</h1>
+    <p>Use buttons or swipe to move and collect ZOGE coins. Avoid obstacles! Levels get harder.</p>
+    <canvas id="gameCanvas"></canvas> <!-- Removed fixed width/height for responsiveness -->
+    <div class="controls">
+      <button class="control-btn" onclick="moveUp()">↑</button>
+      <div>
+        <button class="control-btn" onclick="moveLeft()">←</button>
+        <button class="control-btn" onclick="moveDown()">↓</button>
+        <button class="control-btn" onclick="moveRight()">→</button>
+      </div>
+    </div>
+    <a class="btn restart" href="#" onclick="restartGame()">Restart Game</a>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Set canvas size dynamically based on screen
+    function resizeCanvas() {
+      canvas.width = window.innerWidth > 600 ? 400 : window.innerWidth * 0.9;
+      canvas.height = canvas.width; // Square canvas for simplicity
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // Load images
+    const playerImg = new Image();
+    playerImg.src = 'https://i.postimg.cc/RFKv6Lxq/file-0000000054e461f49a1a8376c7442d76.png'; // ZOGE logo as player
+    const coinImg = new Image();
+    coinImg.src = 'https://i.postimg.cc/RFKv6Lxq/file-0000000054e461f49a1a8376c7442d76.png'; // ZOGE coin
+    const obstacleImg = new Image();
+    obstacleImg.src = 'https://i.postimg.cc/0Q3Q3Q3Q/obstacle.png'; // Placeholder, replace with custom image
+
+    // Game variables
+    const player = { x: 0, y: 0, width: 40, height: 40, speed: 5 };
+    let coins = [];
+    let obstacles = [];
+    let score = 0;
+    let level = 1;
+    let gameOver = false;
+    let touchStart = { x: 0, y: 0 };
+
+    // Position player in center initially
+    function setInitialPlayerPosition() {
+      player.x = (canvas.width - player.width) / 2;
+      player.y = (canvas.height - player.height) / 2;
+    }
+    setInitialPlayerPosition();
+
+    // Generate coins
+    function generateCoins() {
+      coins.push({
+        x: Math.random() * (canvas.width - 30),
+        y: Math.random() * (canvas.height - 30),
+        width: 30,
+        height: 30
+      });
+    }
+
+    // Generate obstacles
+    function generateObstacles() {
+      obstacles.push({
+        x: Math.random() * (canvas.width - 40),
+        y: Math.random() * (canvas.height - 40),
+        width: 40,
+        height: 40
+      });
+    }
+
+    // Check collision
+    function checkCollision(a, b) {
+      return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    }
+
+    // Move functions
+    function moveUp() { if (player.y > 0) player.y -= player.speed; }
+    function moveDown() { if (player.y < canvas.height - player.height) player.y += player.speed; }
+    function moveLeft() { if (player.x > 0) player.x -= player.speed; }
+    function moveRight() { if (player.x < canvas.width - player.width) player.x += player.speed; }
+
+    // Touch controls
+    canvas.addEventListener('touchstart', (e) => {
+      touchStart.x = e.touches[0].clientX;
+      touchStart.y = e.touches[0].clientY;
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault(); // Prevent scrolling
+      const touchEnd = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      const dx = touchEnd.x - touchStart.x;
+      const dy = touchEnd.y - touchStart.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > 20) { // Minimum swipe distance
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx > 0) moveRight();
+          else moveLeft();
+        } else {
+          if (dy < 0) moveUp();
+          else moveDown();
+        }
+        touchStart = touchEnd; // Update start point
+      }
+    });
+
+    // Game loop
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw background
+      ctx.fillStyle = '#333';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw player
+      ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+
+      // Draw coins
+      coins.forEach((coin, index) => {
+        ctx.drawImage(coinImg, coin.x, coin.y, coin.width, coin.height);
+        if (checkCollision(player, coin)) {
+          score += 10;
+          coins.splice(index, 1);
+          if (score % 50 === 0) levelUp();
+        }
+      });
+
+      // Draw obstacles
+      obstacles.forEach(ob => {
+        ctx.drawImage(obstacleImg, ob.x, ob.y, ob.width, ob.height);
+        if (checkCollision(player, ob)) {
+          gameOver = true;
+        }
+      });
+
+      // Draw score
+      ctx.fillStyle = '#fff';
+      ctx.font = '20px Poppins';
+      ctx.fillText(`Score: ${score} | Level: ${level}`, 10, 30);
+
+      // Game over
+      if (gameOver) {
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = '30px Poppins';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
+        ctx.fillText(`Level: ${level}`, canvas.width / 2, canvas.height / 2 + 60);
+        return;
+      }
+
+      // Generate new items
+      if (Math.random() < 0.02) generateCoins();
+      if (Math.random() < 0.01 * level) generateObstacles();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Level up
+    function levelUp() {
+      level++;
+      player.speed += 0.5; // Increase speed
+    }
+
+    // Restart game
+    function restartGame() {
+      setInitialPlayerPosition();
+      coins = [];
+      obstacles = [];
+      score = 0;
+      level = 1;
+      gameOver = false;
+      gameLoop();
+    }
+
+    // Start game when images load
+    playerImg.onload = coinImg.onload = obstacleImg.onload = () => {
+      if (playerImg.complete && coinImg.complete && obstacleImg.complete) {
+        gameLoop();
+      }
+    };
+  </script>
+</body>
+</html>
