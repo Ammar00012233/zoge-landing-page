@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ZOGE Price Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      touch-action: manipulation;
+    }
+    .container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+    }
+    h1 {
+      font-size: 2rem;
+      color: #ff6b6b;
+      margin-bottom: 20px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .input-group {
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 10px;
+      width: 70%;
+      border: 2px solid #ff6b6b;
+      border-radius: 5px 0 0 5px;
+      outline: none;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      background-color: #ff6b6b;
+      color: #fff;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #e55a5a;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: #555;
+      line-height: 1.6;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 5px;
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 1.5rem; }
+      input { width: 60%; }
+      button { padding: 10px; }
+      #result { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ZOGE Price Checker</h1>
+    <div class="input-group">
+      <input type="text" id="coinInput" placeholder="Enter coin name (e.g., bitcoin, ethereum)">
+      <button onclick="checkPrice()">Check</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    async function checkPrice() {
+      const coinInput = document.getElementById('coinInput').value.trim().toLowerCase();
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Loading...';
+
+      if (!coinInput) {
+        resultDiv.innerHTML = 'Please enter a coin name!';
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinInput}&vs_currencies=usd&include_market_cap=true&include_24hr_vol=true&include_24hr_change=true`);
+        const data = await response.json();
+
+        if (data[coinInput]) {
+          const coinData = data[coinInput];
+          resultDiv.innerHTML = `
+            <strong>${coinInput.charAt(0).toUpperCase() + coinInput.slice(1)} Details:</strong><br>
+            Price (USD): $${coinData.usd}<br>
+            Market Cap: $${coinData.usd_market_cap.toLocaleString()}<br>
+            24h Volume: $${coinData.usd_24h_vol.toLocaleString()}<br>
+            24h Change: ${coinData.usd_24h_change.toFixed(2)}%
+          `;
+        } else {
+          resultDiv.innerHTML = 'Coin not found or not supported by CoinGecko!';
+        }
+      } catch (error) {
+        resultDiv.innerHTML = 'Error fetching data. Try again later!';
+        console.error(error);
+      }
+    }
+
+    // Allow Enter key to trigger check
+    document.getElementById('coinInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') checkPrice();
+    });
+  </script>
+</body>
+</html>
