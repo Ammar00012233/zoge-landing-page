@@ -123,6 +123,16 @@
       margin-left: 10px;
       display: none;
     }
+    .token-counter {
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      border: 2px solid #ff6b6b;
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #ff6b6b;
+    }
   </style>
 </head>
 <body>
@@ -131,6 +141,7 @@
     <h1>ZOGE Presale</h1>
     <p>🎉 Join the official ZOGE presale on TON! Get 5% (50M ZOGE) at 0.00003 TON each (≈ 33,333 ZOGE per TON). Goal: 1500 TON ≈ $2250. 🚀</p>
     <p>🌟 Connect your TON wallet and buy now! Manual transfer by the team after payment.</p>
+    <div class="token-counter" id="tokenCounter">Tokens Remaining: 50,000,000 ZOGE</div>
 
     <form id="presaleForm" onsubmit="submitOrder(event)">
       <div class="form-group">
@@ -147,6 +158,12 @@
   </div>
 
   <script>
+    let remainingTokens = 50000000; // Initial 50M ZOGE
+
+    function updateTokenCounter() {
+      document.getElementById('tokenCounter').innerText = `Tokens Remaining: ${remainingTokens.toLocaleString()} ZOGE`;
+    }
+
     function submitOrder(event) {
       event.preventDefault();
       const wallet = document.getElementById('wallet').value.trim();
@@ -154,7 +171,6 @@
       const pricePerToken = 0.00003; // 0.00003 TON per ZOGE
       const minTON = 3;
       const maxTON = 250;
-      const totalZOGE = 50000000; // Max 50M ZOGE
 
       if (amount < minTON || amount > maxTON) {
         document.getElementById('result').innerHTML = `<span class="error">Error: Amount must be between ${minTON} and ${maxTON} TON!</span>`;
@@ -164,10 +180,13 @@
       const quantityZOGE = Math.floor(amount / pricePerToken);
       const expectedTON = quantityZOGE * pricePerToken;
 
-      if (quantityZOGE > totalZOGE) {
-        document.getElementById('result').innerHTML = `<span class="error">Error: Only ${totalZOGE} ZOGE available!</span>`;
+      if (quantityZOGE > remainingTokens) {
+        document.getElementById('result').innerHTML = `<span class="error">Error: Only ${remainingTokens.toLocaleString()} ZOGE available!</span>`;
         return;
       }
+
+      remainingTokens -= quantityZOGE;
+      updateTokenCounter();
 
       const order = {
         wallet: wallet,
@@ -185,7 +204,7 @@
           <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
           <span class="copied" id="copied">Copied!</span>
         </div>
-        You’ll receive ≈ <strong>${quantityZOGE} ZOGE</strong> (≈ ${expectedTON.toFixed(5)} TON).<br>
+        You’ll receive ≈ <strong>${quantityZOGE.toLocaleString()} ZOGE</strong> (≈ ${expectedTON.toFixed(5)} TON).<br>
         We’ll transfer manually after payment confirmation.
       `;
 
@@ -202,6 +221,9 @@
         console.error('Failed to copy: ', err);
       });
     }
+
+    // Initial update
+    updateTokenCounter();
   </script>
 </body>
 </html>
