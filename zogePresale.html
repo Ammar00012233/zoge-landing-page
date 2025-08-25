@@ -94,6 +94,35 @@
       margin-bottom: 20px;
       border-radius: 10px;
     }
+    .address-box {
+      background-color: #f9f9f9;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      margin-top: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      word-wrap: break-word;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .copy-btn {
+      background-color: #0088cc;
+      color: #fff;
+      padding: 5px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .copy-btn:hover {
+      background-color: #006699;
+    }
+    .copied {
+      color: #28a745;
+      margin-left: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -151,12 +180,27 @@
 
       document.getElementById('result').innerHTML = `
         <span class="success">Order Confirmed!</span><br>
-        Pay <strong>${amount} TON</strong> to: <strong>UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL</strong><br>
+        <div class="address-box">
+          Pay <strong>${amount} TON</strong> to: <span id="address">UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL</span>
+          <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
+          <span class="copied" id="copied">Copied!</span>
+        </div>
         You’ll receive ≈ <strong>${quantityZOGE} ZOGE</strong> (≈ ${expectedTON.toFixed(5)} TON).<br>
         We’ll transfer manually after payment confirmation.
       `;
 
       document.getElementById('presaleForm').reset();
+    }
+
+    function copyAddress() {
+      const address = document.getElementById('address').innerText;
+      navigator.clipboard.writeText(address).then(() => {
+        const copiedMsg = document.getElementById('copied');
+        copiedMsg.style.display = 'inline';
+        setTimeout(() => { copiedMsg.style.display = 'none'; }, 2000); // Hide after 2 seconds
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+      });
     }
   </script>
 </body>
