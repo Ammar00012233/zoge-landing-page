@@ -4,14 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZOGE Meme Coin</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #ff6b6b, #ffd93d);
@@ -218,6 +214,41 @@
     .presale-section .btn:hover {
       background-color: #e55a5a;
     }
+    #wallet-section, #leaderboard-section {
+      margin: 20px 0;
+      padding: 15px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    #wallet-address {
+      font-family: 'Courier New', Courier, monospace;
+      word-wrap: break-word;
+      color: #333;
+      margin: 10px 0;
+    }
+    #connect-btn {
+      background-color: #ff6b6b;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #connect-btn:hover {
+      background-color: #e55a5a;
+    }
+    #leaderboard-list {
+      list-style: none;
+      text-align: left;
+      padding: 0;
+    }
+    #leaderboard-list li {
+      margin: 5px 0;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -231,11 +262,30 @@
       <a class="btn twitter" href="https://x.com/ZogeC55380?t=PLt1Daof4G5vGNbbqHYGdw&s=09" target="_blank">Twitter</a>
     </div>
 
-    <!-- Presale Section (Moved to Top) -->
+    <!-- Presale Section -->
     <div class="section presale-section">
       <h2>Presale is LIVE! 🚀</h2>
       <p>Grab 5% (50M ZOGE) at just 0.00003 TON each (≈ 33,333 ZOGE per TON). Goal: 1500 TON ≈ $2250. Hurry, limited spots!</p>
       <a href="zogePresale.html" class="btn">Join Presale Now</a>
+    </div>
+
+    <!-- Wallet Connection Section -->
+    <div class="section" id="wallet-section">
+      <h2>Connect Your Wallet</h2>
+      <p>Link your TON wallet to track your activity and earn rewards!</p>
+      <button id="connect-btn">Connect Wallet</button>
+      <div id="wallet-address"></div>
+    </div>
+
+    <!-- Leaderboard Section -->
+    <div class="section" id="leaderboard-section">
+      <h2>Leaderboard</h2>
+      <p>Top players based on purchases and activity:</p>
+      <ul id="leaderboard-list">
+        <li>1. Loading...</li>
+        <li>2. Loading...</li>
+        <li>3. Loading...</li>
+      </ul>
     </div>
 
     <!-- ZOGE Games Hub Section -->
@@ -309,6 +359,43 @@
   <!-- Particles.js -->
   <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
   <script>
+    // Placeholder for TON Connect (Simplified for now)
+    let walletAddress = '';
+    document.getElementById('connect-btn').addEventListener('click', () => {
+      // Simulate wallet connection (Replace with TON Connect SDK later)
+      walletAddress = 'UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL'; // Example address
+      document.getElementById('wallet-address').innerHTML = `Connected: <span>${walletAddress}</span>`;
+      updateLeaderboard();
+    });
+
+    // Simulate user activity (e.g., purchases)
+    let userScores = {};
+
+    function updateLeaderboard() {
+      // Simulate some data (Replace with real data from purchases later)
+      if (!userScores[walletAddress]) userScores[walletAddress] = Math.floor(Math.random() * 1000); // Random score
+      let sortedScores = Object.entries(userScores).sort((a, b) => b[1] - a[1]);
+      let leaderboard = document.getElementById('leaderboard-list');
+      leaderboard.innerHTML = '';
+      sortedScores.slice(0, 3).forEach(([address, score], index) => {
+        leaderboard.innerHTML += `<li>${index + 1}. ${address}: ${score} Points</li>`;
+      });
+    }
+
+    // Add activity (e.g., when someone buys)
+    function addActivity(address, points) {
+      if (!userScores[address]) userScores[address] = 0;
+      userScores[address] += points;
+      localStorage.setItem('zogeScores', JSON.stringify(userScores));
+      updateLeaderboard();
+    }
+
+    // Load from localStorage
+    if (localStorage.getItem('zogeScores')) {
+      userScores = JSON.parse(localStorage.getItem('zogeScores'));
+      updateLeaderboard();
+    }
+
     particlesJS("particles-js", {
       particles: {
         number: { value: 80, density: { enable: true, value_area: 800 } },
