@@ -45,6 +45,27 @@
       margin-bottom: 20px;
       line-height: 1.6;
     }
+    .stats {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .progress {
+      background-color: #ddd;
+      border-radius: 10px;
+      height: 20px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+    .progress-bar {
+      background-color: #ff6b6b;
+      height: 100%;
+      text-align: right;
+      padding-right: 10px;
+      color: #fff;
+      transition: width 0.3s;
+    }
     .form-group {
       margin: 15px 0;
       text-align: left;
@@ -75,155 +96,74 @@
       border-radius: 25px;
       font-size: 1.1rem;
       cursor: pointer;
-      transition: background-color 0.3s, transform 0.3s;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s;
     }
     .btn:hover {
       background-color: #e55a5a;
-      transform: translateY(-2px);
-    }
-    #result {
-      margin-top: 20px;
-      font-size: 1rem;
-      color: #ff6b6b;
-      font-weight: 600;
-    }
-    .error { color: #e55a5a; }
-    .success { color: #28a745; }
-    .logo {
-      max-width: 120px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-    }
-    .address-box {
-      background-color: #f9f9f9;
-      padding: 15px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      margin-top: 10px;
-      font-family: 'Courier New', Courier, monospace;
-      word-wrap: break-word;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .copy-btn {
-      background-color: #0088cc;
-      color: #fff;
-      padding: 5px 15px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .copy-btn:hover {
-      background-color: #006699;
-    }
-    .copied {
-      color: #28a745;
-      margin-left: 10px;
-      display: none;
-    }
-    .token-counter {
-      background-color: #fff;
-      padding: 10px;
-      border-radius: 10px;
-      border: 2px solid #ff6b6b;
-      margin-bottom: 20px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #ff6b6b;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="https://i.postimg.cc/RFKv6Lxq/file-0000000054e461f49a1a8376c7442d76.png" alt="ZOGE Logo" class="logo">
-    <h1>ZOGE Presale</h1>
-    <p>🎉 Join the official ZOGE presale on TON! Get 5% (50M ZOGE) at 0.00003 TON each (≈ 33,333 ZOGE per TON). Goal: 1500 TON ≈ $2250. 🚀</p>
-    <p>🌟 Connect your TON wallet and buy now! Manual transfer by the team after payment.</p>
-    <div class="token-counter" id="tokenCounter">Tokens Remaining: 50,000,000 ZOGE</div>
+    <h1>ZOGE Presale 🚀</h1>
+    <p>Join the presale and grab ZOGE tokens at 0.00003 TON each! Goal: 1500 TON ≈ $2250.</p>
 
-    <form id="presaleForm" onsubmit="submitOrder(event)">
-      <div class="form-group">
-        <label for="wallet">Wallet Address <i class="fas fa-wallet"></i></label>
-        <input type="text" id="wallet" placeholder="Enter your TON wallet address" required>
-      </div>
-      <div class="form-group">
-        <label for="amount">Amount (TON) <i class="fas fa-coins"></i> [Min 3 TON, Max 250 TON]</label>
-        <input type="number" id="amount" min="3" max="250" step="0.01" placeholder="Enter TON amount" required>
-      </div>
-      <button type="submit" class="btn">Buy Now</button>
-    </form>
-    <div id="result"></div>
+    <!-- Statistics -->
+    <div class="stats">
+      <p><strong>Collected TON:</strong> 8 TON</p>
+      <p><strong>Sold ZOGE:</strong> 266,667 ZOGE</p>
+      <p><strong>Remaining ZOGE:</strong> 49,733,333 ZOGE</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress">
+      <div class="progress-bar" id="progress-bar" style="width: 0.53%;">0.53% Sold</div>
+    </div>
+    <p>Sold: 8 TON | Remaining: 1492 TON</p>
+
+    <div class="form-group">
+      <label for="ton-amount">Enter TON Amount to Buy:</label>
+      <input type="number" id="ton-amount" placeholder="e.g., 1" min="0" step="0.1">
+    </div>
+    <a href="#" class="btn">Buy Now</a>
   </div>
 
   <script>
-    let remainingTokens = 50000000; // Initial 50M ZOGE
+    // Update progress based on sold amount
+    const totalGoal = 1500; // Total TON goal
+    let soldAmount = 8; // Updated with your 8 TON
+    const totalZoge = 50000000; // Total ZOGE for presale
+    let soldZoge = 266667; // Updated with your purchase
 
-    function updateTokenCounter() {
-      document.getElementById('tokenCounter').innerText = `Tokens Remaining: ${remainingTokens.toLocaleString()} ZOGE`;
-    }
-
-    function submitOrder(event) {
-      event.preventDefault();
-      const wallet = document.getElementById('wallet').value.trim();
-      const amount = parseFloat(document.getElementById('amount').value);
-      const pricePerToken = 0.00003; // 0.00003 TON per ZOGE
-      const minTON = 3;
-      const maxTON = 250;
-
-      if (amount < minTON || amount > maxTON) {
-        document.getElementById('result').innerHTML = `<span class="error">Error: Amount must be between ${minTON} and ${maxTON} TON!</span>`;
-        return;
-      }
-
-      const quantityZOGE = Math.floor(amount / pricePerToken);
-      const expectedTON = quantityZOGE * pricePerToken;
-
-      if (quantityZOGE > remainingTokens) {
-        document.getElementById('result').innerHTML = `<span class="error">Error: Only ${remainingTokens.toLocaleString()} ZOGE available!</span>`;
-        return;
-      }
-
-      remainingTokens -= quantityZOGE;
-      updateTokenCounter();
-
-      const order = {
-        wallet: wallet,
-        amountTON: amount,
-        quantityZOGE: quantityZOGE,
-        expectedTON: expectedTON.toFixed(5),
-        timestamp: new Date().toLocaleString()
-      };
-      console.log("Order:", order); // Log for you to track
-
-      document.getElementById('result').innerHTML = `
-        <span class="success">Order Confirmed!</span><br>
-        <div class="address-box">
-          Pay <strong>${amount} TON</strong> to: <span id="address">UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL</span>
-          <button class="copy-btn" onclick="copyAddress()">Copy Address</button>
-          <span class="copied" id="copied">Copied!</span>
-        </div>
-        You’ll receive ≈ <strong>${quantityZOGE.toLocaleString()} ZOGE</strong> (≈ ${expectedTON.toFixed(5)} TON).<br>
-        We’ll transfer manually after payment confirmation.
-      `;
-
-      document.getElementById('presaleForm').reset();
-    }
-
-    function copyAddress() {
-      const address = document.getElementById('address').innerText;
-      navigator.clipboard.writeText(address).then(() => {
-        const copiedMsg = document.getElementById('copied');
-        copiedMsg.style.display = 'inline';
-        setTimeout(() => { copiedMsg.style.display = 'none'; }, 2000); // Hide after 2 seconds
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-      });
+    function updateProgress() {
+      const percentage = (soldAmount / totalGoal) * 100;
+      const remainingTon = totalGoal - soldAmount;
+      const remainingZoge = totalZoge - soldZoge;
+      document.getElementById('progress-bar').style.width = `${percentage}%`;
+      document.getElementById('progress-bar').textContent = `${percentage.toFixed(2)}% Sold`;
+      document.querySelector('p:nth-child(4)').textContent = `Sold: ${soldAmount} TON | Remaining: ${remainingTon} TON`;
+      document.querySelector('.stats p:nth-child(1)').textContent = `<strong>Collected TON:</strong> ${soldAmount} TON`;
+      document.querySelector('.stats p:nth-child(2)').textContent = `<strong>Sold ZOGE:</strong> ${soldZoge.toLocaleString()} ZOGE`;
+      document.querySelector('.stats p:nth-child(3)').textContent = `<strong>Remaining ZOGE:</strong> ${remainingZoge.toLocaleString()} ZOGE`;
     }
 
     // Initial update
-    updateTokenCounter();
+    updateProgress();
+
+    // Simulate buy (to be replaced with real payment logic later)
+    document.querySelector('.btn').addEventListener('click', () {
+      const amount = parseFloat(document.getElementById('ton-amount').value) || 0;
+      if (amount > 0 && amount <= remainingTon) {
+        soldAmount += amount;
+        soldZoge += Math.floor(amount / 0.00003);
+        updateProgress();
+        alert(`Purchased ${amount} TON! New total sold: ${soldAmount} TON, ${soldZoge.toLocaleString()} ZOGE`);
+      } else {
+        alert('Invalid amount or insufficient remaining TON!');
+      }
+    });
   </script>
 </body>
 </html>
