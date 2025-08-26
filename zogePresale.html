@@ -45,27 +45,6 @@
       margin-bottom: 20px;
       line-height: 1.6;
     }
-    .stats {
-      background-color: #f8f9fa;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 20px;
-    }
-    .progress {
-      background-color: #ddd;
-      border-radius: 10px;
-      height: 20px;
-      margin: 20px 0;
-      overflow: hidden;
-    }
-    .progress-bar {
-      background-color: #ff6b6b;
-      height: 100%;
-      text-align: right;
-      padding-right: 10px;
-      color: #fff;
-      transition: width 0.3s;
-    }
     .form-group {
       margin: 15px 0;
       text-align: left;
@@ -103,6 +82,33 @@
     .btn:hover {
       background-color: #e55a5a;
     }
+    #wallet-section {
+      margin-top: 20px;
+      display: none;
+    }
+    #wallet-address {
+      font-family: 'Courier New', Courier, monospace;
+      word-wrap: break-word;
+      color: #333;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      display: inline-block;
+    }
+    #copy-btn {
+      background-color: #0088cc;
+      color: #fff;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      margin-left: 10px;
+      transition: background-color 0.3s;
+    }
+    #copy-btn:hover {
+      background-color: #006699;
+    }
   </style>
 </head>
 <body>
@@ -110,59 +116,51 @@
     <h1>ZOGE Presale 🚀</h1>
     <p>Join the presale and grab ZOGE tokens at 0.00003 TON each! Goal: 1500 TON ≈ $2250.</p>
 
-    <!-- Statistics -->
-    <div class="stats">
-      <p><strong>Collected TON:</strong> 8 TON</p>
-      <p><strong>Sold ZOGE:</strong> 266,667 ZOGE</p>
-      <p><strong>Remaining ZOGE:</strong> 49,733,333 ZOGE</p>
-    </div>
-
-    <!-- Progress Bar -->
-    <div class="progress">
-      <div class="progress-bar" id="progress-bar" style="width: 0.53%;">0.53% Sold</div>
-    </div>
-    <p>Sold: 8 TON | Remaining: 1492 TON</p>
-
     <div class="form-group">
       <label for="ton-amount">Enter TON Amount to Buy:</label>
       <input type="number" id="ton-amount" placeholder="e.g., 1" min="0" step="0.1">
     </div>
-    <a href="#" class="btn">Buy Now</a>
+    <a href="#" class="btn" id="buy-btn">Buy Now</a>
+
+    <!-- Wallet Section -->
+    <div id="wallet-section">
+      <p>Send TON to this address:</p>
+      <span id="wallet-address">UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL</span>
+      <button id="copy-btn">Copy</button>
+    </div>
   </div>
 
   <script>
-    // Update progress based on sold amount
-    const totalGoal = 1500; // Total TON goal
-    let soldAmount = 8; // Updated with your 8 TON
-    const totalZoge = 50000000; // Total ZOGE for presale
-    let soldZoge = 266667; // Updated with your purchase
+    // Initialize TON Connect (placeholder, to be fully integrated later)
+    const tonConnectUI = new TONConnectUI({
+      manifestUrl: 'https://ammar00012233.github.io/zoge-landing-page/tonconnect-manifest.json', // Replace with your manifest URL
+      buttonRootId: 'buy-btn' // Using buy button as trigger
+    });
 
-    function updateProgress() {
-      const percentage = (soldAmount / totalGoal) * 100;
-      const remainingTon = totalGoal - soldAmount;
-      const remainingZoge = totalZoge - soldZoge;
-      document.getElementById('progress-bar').style.width = `${percentage}%`;
-      document.getElementById('progress-bar').textContent = `${percentage.toFixed(2)}% Sold`;
-      document.querySelector('p:nth-child(4)').textContent = `Sold: ${soldAmount} TON | Remaining: ${remainingTon} TON`;
-      document.querySelector('.stats p:nth-child(1)').textContent = `<strong>Collected TON:</strong> ${soldAmount} TON`;
-      document.querySelector('.stats p:nth-child(2)').textContent = `<strong>Sold ZOGE:</strong> ${soldZoge.toLocaleString()} ZOGE`;
-      document.querySelector('.stats p:nth-child(3)').textContent = `<strong>Remaining ZOGE:</strong> ${remainingZoge.toLocaleString()} ZOGE`;
-    }
-
-    // Initial update
-    updateProgress();
-
-    // Simulate buy (to be replaced with real payment logic later)
-    document.querySelector('.btn').addEventListener('click', () {
-      const amount = parseFloat(document.getElementById('ton-amount').value) || 0;
-      if (amount > 0 && amount <= remainingTon) {
-        soldAmount += amount;
-        soldZoge += Math.floor(amount / 0.00003);
-        updateProgress();
-        alert(`Purchased ${amount} TON! New total sold: ${soldAmount} TON, ${soldZoge.toLocaleString()} ZOGE`);
-      } else {
-        alert('Invalid amount or insufficient remaining TON!');
+    let walletAddress = '';
+    tonConnectUI.onStatusChange((wallet) => {
+      if (wallet) {
+        walletAddress = wallet.account.address;
+        document.getElementById('wallet-address').textContent = walletAddress;
       }
+    });
+
+    // Show wallet address on buy click
+    document.getElementById('buy-btn').addEventListener('click', () => {
+      const amount = parseFloat(document.getElementById('ton-amount').value) || 0;
+      if (amount > 0) {
+        document.getElementById('wallet-section').style.display = 'block';
+      } else {
+        alert('Please enter a valid TON amount!');
+      }
+    });
+
+    // Copy to clipboard
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      const address = document.getElementById('wallet-address').textContent;
+      navigator.clipboard.writeText(address).then(() => {
+        alert('Address copied to clipboard!');
+      });
     });
   </script>
 </body>
