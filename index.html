@@ -28,6 +28,47 @@
       height: 100%;
       z-index: -1;
     }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 800px;
+      margin-bottom: 20px;
+    }
+    .logo {
+      max-width: 150px;
+      border-radius: 50%;
+      border: 5px solid #ffd93d;
+      margin: 0;
+      transition: transform 0.3s;
+    }
+    .logo:hover {
+      transform: scale(1.1) rotate(10deg);
+    }
+    #wallet-section {
+      text-align: right;
+    }
+    #connect-btn {
+      background-color: #ff6b6b;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 25px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #connect-btn:hover {
+      background-color: #e55a5a;
+    }
+    #wallet-address {
+      font-family: 'Courier New', Courier, monospace;
+      word-wrap: break-word;
+      color: #333;
+      margin-top: 10px;
+      display: none; /* Hidden until connected */
+    }
     .container {
       background-color: rgba(255, 255, 255, 0.95);
       padding: 40px;
@@ -37,21 +78,11 @@
       width: 100%;
       text-align: center;
       animation: fadeIn 1s ease-in-out;
-      margin-bottom: 40px;
+      margin-top: 0;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-    .logo {
-      max-width: 150px;
-      border-radius: 50%;
-      border: 5px solid #ffd93d;
-      margin-bottom: 20px;
-      transition: transform 0.3s;
-    }
-    .logo:hover {
-      transform: scale(1.1) rotate(10deg);
     }
     .title {
       font-size: 2.5rem;
@@ -80,6 +111,25 @@
       font-size: 1rem;
       color: #555;
       line-height: 1.6;
+    }
+    #leaderboard-section {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 200px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    #leaderboard-list {
+      list-style: none;
+      text-align: left;
+      padding: 0;
+    }
+    #leaderboard-list li {
+      margin: 5px 0;
+      color: #333;
     }
     .roadmap {
       position: relative;
@@ -214,47 +264,26 @@
     .presale-section .btn:hover {
       background-color: #e55a5a;
     }
-    #wallet-section, #leaderboard-section {
-      margin: 20px 0;
-      padding: 15px;
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    }
-    #wallet-address {
-      font-family: 'Courier New', Courier, monospace;
-      word-wrap: break-word;
-      color: #333;
-      margin: 10px 0;
-    }
-    #connect-btn {
-      background-color: #ff6b6b;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 25px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    #connect-btn:hover {
-      background-color: #e55a5a;
-    }
-    #leaderboard-list {
-      list-style: none;
-      text-align: left;
-      padding: 0;
-    }
-    #leaderboard-list li {
-      margin: 5px 0;
-      color: #333;
-    }
   </style>
 </head>
 <body>
   <div id="particles-js"></div>
-  <div class="container">
+  <div class="header">
+    <div id="leaderboard-section">
+      <h2>Leaderboard</h2>
+      <ul id="leaderboard-list">
+        <li>1. Loading...</li>
+        <li>2. Loading...</li>
+        <li>3. Loading...</li>
+      </ul>
+    </div>
     <img class="logo" src="https://i.postimg.cc/RFKv6Lxq/file-0000000054e461f49a1a8376c7442d76.png" alt="ZOGE Logo">
+    <div id="wallet-section">
+      <button id="connect-btn">Connect Wallet</button>
+      <div id="wallet-address"></div>
+    </div>
+  </div>
+  <div class="container">
     <h1 class="title">ZOGE Meme Coin</h1>
     <p class="desc">The ultimate meme coin thriving on decentralized platforms, Telegram, and Twitter! Join the ZOGE community for fun, updates, and a decentralized crypto adventure.</p>
     <div class="social-links">
@@ -267,25 +296,6 @@
       <h2>Presale is LIVE! 🚀</h2>
       <p>Grab 5% (50M ZOGE) at just 0.00003 TON each (≈ 33,333 ZOGE per TON). Goal: 1500 TON ≈ $2250. Hurry, limited spots!</p>
       <a href="zogePresale.html" class="btn">Join Presale Now</a>
-    </div>
-
-    <!-- Wallet Connection Section -->
-    <div class="section" id="wallet-section">
-      <h2>Connect Your Wallet</h2>
-      <p>Link your TON wallet to track your activity and earn rewards!</p>
-      <button id="connect-btn">Connect Wallet</button>
-      <div id="wallet-address"></div>
-    </div>
-
-    <!-- Leaderboard Section -->
-    <div class="section" id="leaderboard-section">
-      <h2>Leaderboard</h2>
-      <p>Top players based on purchases and activity:</p>
-      <ul id="leaderboard-list">
-        <li>1. Loading...</li>
-        <li>2. Loading...</li>
-        <li>3. Loading...</li>
-      </ul>
     </div>
 
     <!-- ZOGE Games Hub Section -->
@@ -358,27 +368,44 @@
 
   <!-- Particles.js -->
   <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <!-- TON Connect SDK -->
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
   <script>
-    // Placeholder for TON Connect (Simplified for now)
-    let walletAddress = '';
-    document.getElementById('connect-btn').addEventListener('click', () => {
-      // Simulate wallet connection (Replace with TON Connect SDK later)
-      walletAddress = 'UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL'; // Example address
-      document.getElementById('wallet-address').innerHTML = `Connected: <span>${walletAddress}</span>`;
-      updateLeaderboard();
+    // Initialize TON Connect
+    const tonConnectUI = new TONConnectUI({
+      manifestUrl: 'https://your-domain.com/tonconnect-manifest.json', // Replace with your manifest URL
+      buttonRootId: 'connect-btn'
     });
 
-    // Simulate user activity (e.g., purchases)
+    let walletAddress = '';
+    tonConnectUI.onStatusChange((wallet) => {
+      if (wallet) {
+        walletAddress = wallet.account.address;
+        document.getElementById('wallet-address').style.display = 'block';
+        document.getElementById('wallet-address').innerHTML = `Connected: <span>${walletAddress}</span>`;
+        loadScores();
+      } else {
+        walletAddress = '';
+        document.getElementById('wallet-address').style.display = 'none';
+      }
+    });
+
+    // Simulate user scores
     let userScores = {};
 
+    function loadScores() {
+      if (localStorage.getItem('zogeScores')) {
+        userScores = JSON.parse(localStorage.getItem('zogeScores'));
+      }
+      updateLeaderboard();
+    }
+
     function updateLeaderboard() {
-      // Simulate some data (Replace with real data from purchases later)
-      if (!userScores[walletAddress]) userScores[walletAddress] = Math.floor(Math.random() * 1000); // Random score
       let sortedScores = Object.entries(userScores).sort((a, b) => b[1] - a[1]);
       let leaderboard = document.getElementById('leaderboard-list');
       leaderboard.innerHTML = '';
       sortedScores.slice(0, 3).forEach(([address, score], index) => {
-        leaderboard.innerHTML += `<li>${index + 1}. ${address}: ${score} Points</li>`;
+        leaderboard.innerHTML += `<li>${index + 1}. ${address.slice(0, 6)}...${address.slice(-4)}: ${score} Points</li>`;
       });
     }
 
@@ -390,10 +417,10 @@
       updateLeaderboard();
     }
 
-    // Load from localStorage
-    if (localStorage.getItem('zogeScores')) {
-      userScores = JSON.parse(localStorage.getItem('zogeScores'));
-      updateLeaderboard();
+    // Example: Add points when buying (to be integrated with presale later)
+    // For now, simulate it
+    if (walletAddress) {
+      addActivity(walletAddress, 100); // Example: 100 points for connecting
     }
 
     particlesJS("particles-js", {
