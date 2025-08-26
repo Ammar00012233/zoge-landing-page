@@ -11,7 +11,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+      background: linear-gradient(120deg, #ff6b6b 0%, #ffd93d 100%);
       color: #333;
       min-height: 100vh;
       display: flex;
@@ -20,14 +20,15 @@
       padding: 20px;
     }
     .container {
-      background: rgba(255, 255, 255, 0.95);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 30px 20px 25px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.10);
+      max-width: 380px;
       width: 100%;
       text-align: center;
       animation: fadeIn 1s ease-in;
+      border: 1px solid #fff3cd;
     }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
@@ -35,117 +36,198 @@
     }
     h1 {
       color: #ff6b6b;
-      font-size: 2.5rem;
-      margin-bottom: 15px;
+      font-size: 2.2rem;
+      margin-bottom: 8px;
       font-weight: 700;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      font-size: 1.6rem;
+      color: #ff6b6b;
+      font-weight: 600;
+      margin-bottom: 18px;
     }
     p {
-      font-size: 1.1rem;
+      font-size: 1.08rem;
       color: #555;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       line-height: 1.6;
+      text-align: center;
+    }
+    .token-counter {
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid #ff6b6b;
+      margin-bottom: 18px;
+      font-size: 1.10rem;
+      font-weight: 700;
+      color: #ff6b6b;
+      box-shadow: 0 2px 10px rgba(255,107,107,0.08);
     }
     .form-group {
-      margin: 15px 0;
+      margin: 13px 0 12px 0;
       text-align: left;
     }
     .form-group label {
       display: block;
       font-weight: 600;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
       color: #333;
+      font-size: 1rem;
+      letter-spacing: 0.2px;
+    }
+    .form-group i {
+      margin-left: 5px;
+      color: #ff6b6b;
     }
     .form-group input {
       width: 100%;
-      padding: 10px;
+      padding: 11px 12px;
       border: 2px solid #ddd;
-      border-radius: 5px;
-      font-size: 1rem;
+      border-radius: 9px;
+      font-size: 1.02rem;
       transition: border-color 0.3s;
+      background: #fafafa;
     }
     .form-group input:focus {
       border-color: #ff6b6b;
       outline: none;
+      background: #fffbe9;
     }
     .btn {
       background-color: #ff6b6b;
       color: #fff;
-      padding: 12px 25px;
+      padding: 12px 0;
       border: none;
-      border-radius: 25px;
-      font-size: 1.1rem;
+      border-radius: 30px;
+      font-size: 1.15rem;
       cursor: pointer;
       text-decoration: none;
-      display: inline-block;
-      transition: background-color 0.3s;
+      display: block;
+      width: 100%;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 10px rgba(255,107,107,0.08);
+      transition: background-color 0.3s, transform 0.3s;
     }
     .btn:hover {
       background-color: #e55a5a;
+      transform: translateY(-1px) scale(1.03);
     }
     #wallet-section {
       margin-top: 20px;
       display: none;
     }
-    #wallet-address {
-      font-family: 'Courier New', Courier, monospace;
-      word-wrap: break-word;
+    #wallet-section p {
       color: #333;
-      padding: 10px;
-      background-color: #f8f9fa;
-      border-radius: 5px;
-      display: inline-block;
+      font-size: 1rem;
+      margin-bottom: 7px;
+    }
+    #wallet-address-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8f9fa;
+      padding: 11px 10px 11px 14px;
+      border-radius: 9px;
+      border: 1px solid #ddd;
+      font-size: 1.03rem;
+      font-family: 'Courier New', Courier, monospace;
+      margin-top: 7px;
+      gap: 8px;
+      width: 100%;
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #wallet-address {
+      color: #333;
+      word-break: break-all;
     }
     #copy-btn {
       background-color: #0088cc;
       color: #fff;
-      padding: 5px 10px;
+      padding: 6px 12px;
       border: none;
       border-radius: 5px;
-      font-size: 0.9rem;
+      font-size: 0.97rem;
       cursor: pointer;
-      margin-left: 10px;
       transition: background-color 0.3s;
     }
     #copy-btn:hover {
       background-color: #006699;
     }
+    #copied-msg {
+      color: #28a745;
+      font-size: 0.98rem;
+      margin-left: 8px;
+      display: none;
+      font-weight: 600;
+    }
+    @media (max-width: 500px) {
+      .container {
+        padding: 12px 5px 12px 5px;
+        max-width: 99vw;
+      }
+      h1 { font-size: 1.5rem; }
+      .subtitle { font-size: 1.1rem;}
+      .token-counter { font-size: 1rem;}
+      #wallet-address-box { font-size: 0.83rem;}
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>ZOGE Presale 🚀</h1>
-    <p>Join the presale and grab ZOGE tokens at 0.00003 TON each! Goal: 1500 TON ≈ $2250.</p>
+    <h1>ZOGE Presale</h1>
+    <p>🎉 Join the official ZOGE presale on TON! Get 5% (50M ZOGE) at 0.00003 TON each (≈ 33,333 ZOGE per TON).<br>
+      Goal: 1500 TON ≈ $2250. 🚀</p>
+    <p>🌟 Connect your TON wallet and buy now! Manual transfer by the team after payment.</p>
+    <div class="token-counter" id="tokenCounter">Tokens Remaining: 50,000,000 ZOGE</div>
 
     <div class="form-group">
-      <label for="ton-amount">Enter TON Amount to Buy:</label>
-      <input type="number" id="ton-amount" placeholder="e.g., 1" min="0" step="0.1">
+      <label for="wallet">Wallet Address <i class="fas fa-wallet"></i></label>
+      <input type="text" id="wallet" placeholder="Enter your TON wallet address">
     </div>
-    <a href="#" class="btn" id="buy-btn">Buy Now</a>
+    <div class="form-group">
+      <label for="ton-amount">Amount (TON) <i class="fas fa-coins"></i> [Min 3 TON, Max 250 TON]</label>
+      <input type="number" id="ton-amount" min="3" max="250" step="0.01" placeholder="Enter TON amount">
+    </div>
+    <button class="btn" id="buy-btn">Buy Now</button>
 
     <!-- Wallet Section -->
     <div id="wallet-section">
       <p>Send TON to this address:</p>
-      <span id="wallet-address">UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL</span>
-      <button id="copy-btn">Copy</button>
+      <div id="wallet-address-box">
+        <span id="wallet-address">UQC4pUHGNixCfQCyfDKYQuTWvKWW7C3SeZFD4h2uxZY5UxPL</span>
+        <button id="copy-btn">Copy</button>
+        <span id="copied-msg">Copied!</span>
+      </div>
     </div>
   </div>
 
   <script>
     // Show wallet address on buy click
-    document.getElementById('buy-btn').addEventListener('click', () => {
+    document.getElementById('buy-btn').addEventListener('click', function(e) {
+      e.preventDefault();
       const amount = parseFloat(document.getElementById('ton-amount').value) || 0;
-      if (amount > 0) {
+      if (amount >= 3 && amount <= 250) {
         document.getElementById('wallet-section').style.display = 'block';
       } else {
-        alert('Please enter a valid TON amount!');
+        alert('Please enter a valid TON amount between 3 and 250!');
       }
     });
 
     // Copy to clipboard
-    document.getElementById('copy-btn').addEventListener('click', () => {
+    document.getElementById('copy-btn').addEventListener('click', function() {
       const address = document.getElementById('wallet-address').textContent;
-      navigator.clipboard.writeText(address).then(() => {
-        alert('Address copied to clipboard!');
+      navigator.clipboard.writeText(address).then(function() {
+        document.getElementById('copied-msg').style.display = 'inline';
+        setTimeout(function() {
+          document.getElementById('copied-msg').style.display = 'none';
+        }, 1200);
       });
     });
   </script>
