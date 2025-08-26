@@ -131,20 +131,6 @@
   </div>
 
   <script>
-    // Initialize TON Connect (placeholder, to be fully integrated later)
-    const tonConnectUI = new TONConnectUI({
-      manifestUrl: 'https://ammar00012233.github.io/zoge-landing-page/tonconnect-manifest.json', // Replace with your manifest URL
-      buttonRootId: 'buy-btn' // Using buy button as trigger
-    });
-
-    let walletAddress = '';
-    tonConnectUI.onStatusChange((wallet) => {
-      if (wallet) {
-        walletAddress = wallet.account.address;
-        document.getElementById('wallet-address').textContent = walletAddress;
-      }
-    });
-
     // Show wallet address on buy click
     document.getElementById('buy-btn').addEventListener('click', () => {
       const amount = parseFloat(document.getElementById('ton-amount').value) || 0;
