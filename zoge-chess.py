@@ -1,110 +1,112 @@
 import pygame
 import sys
-import random
+from pygame.locals import *
 
-# Initialize pygame
+# Initialize Pygame
 pygame.init()
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GREEN = (50, 168, 82)
-
-# Board settings
-CELL_SIZE = 100
-ROWS, COLS = 3, 3
-WIDTH, HEIGHT = CELL_SIZE * COLS, CELL_SIZE * ROWS
+# Screen settings
+WIDTH, HEIGHT = 800, 800
+CELL_SIZE = WIDTH // 8
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Cat vs Computer")
+pygame.display.set_caption("ZOGE Chess")
 
-# Load move sound
-move_sound = pygame.mixer.Sound("move.wav")
+# Colors
+WHITE = (240, 217, 181)
+BLACK = (181, 136, 99)
+HIGHLIGHT = (255, 255, 0, 100)  # Semi-transparent yellow
+PIECE_COLORS = {"w": (255, 255, 255), "b": (0, 0, 0)}  # White and Black pieces
 
-# Board
-board = [["" for _ in range(COLS)] for _ in range(ROWS)]
+# Initial board state (8x8, "wp" = white pawn, "bp" = black pawn, etc.)
+board = [
+    ["br", "bn", "bb", "bq", "bk", "bb", "bn", "br"],
+    ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", "", ""],
+    ["", "", "", "", "", "", ""],
+    ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+    ["wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"]
+]
 
+# Selected piece and valid moves
+selected_piece = None
+valid_moves = []
+
+# Function to draw the board
 def draw_board():
-    screen.fill(GREEN)
-    for row in range(ROWS):
-        for col in range(COLS):
-            rect = pygame.Rect(col*CELL_SIZE, row*CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            pygame.draw.rect(screen, BLACK, rect, 2)
-            if board[row][col] == "P":
-                pygame.draw.circle(screen, WHITE, rect.center, CELL_SIZE//3)
-            elif board[row][col] == "C":
-                pygame.draw.circle(screen, BLACK, rect.center, CELL_SIZE//3)
+    for row in range(8):
+        for col in range(8):
+            color = WHITE if (row + col) % 2 == 0 else BLACK
+            pygame.draw.rect(screen, color, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
+            piece = board[row][col]
+            if piece:
+                color = PIECE_COLORS[piece[0]]  # Use piece color based on 'w' or 'b'
+                if piece[1] == "p":  # Pawn
+                    pygame.draw.circle(screen, color, (col * CELL_SIZE + CELL_SIZE//2, row * CELL_SIZE + CELL_SIZE//2), CELL_SIZE//4)
+                elif piece[1] in "rnbq":  # Rook, Knight, Bishop, Queen
+                    pygame.draw.rect(screen, color, (col * CELL_SIZE + CELL_SIZE//4, row * CELL_SIZE + CELL_SIZE//4, CELL_SIZE//2, CELL_SIZE//2))
+                elif piece[1] == "k":  # King
+                    pygame.draw.polygon(screen, color, [
+                        (col * CELL_SIZE + CELL_SIZE//2, row * CELL_SIZE + CELL_SIZE//4),
+                        (col * CELL_SIZE + CELL_SIZE//4, row * CELL_SIZE + 3*CELL_SIZE//4),
+                        (col * CELL_SIZE + 3*CELL_SIZE//4, row * CELL_SIZE + 3*CELL_SIZE//4)
+                    ])
+    # Highlight selected piece and valid moves
+    if selected_piece:
+        row, col = selected_piece
+        pygame.draw.rect(screen, HIGHLIGHT, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE), 2)
+        for move in valid_moves:
+            pygame.draw.circle(screen, HIGHLIGHT, (move[1] * CELL_SIZE + CELL_SIZE//2, move[0] * CELL_SIZE + CELL_SIZE//2), 10)
 
-def player_move(pos):
-    x, y = pos
-    row, col = y // CELL_SIZE, x // CELL_SIZE
-    if board[row][col] == "":
-        board[row][col] = "P"
-        move_sound.play()
-        return True
-    return False
-
-def computer_move():
-    # Harder AI: choose winning move, block player, or random
-    for row in range(ROWS):
-        for col in range(COLS):
-            if board[row][col] == "":
-                board[row][col] = "C"
-                if check_winner("C"):
-                    move_sound.play()
-                    return
-                board[row][col] = ""
-    for row in range(ROWS):
-        for col in range(COLS):
-            if board[row][col] == "":
-                board[row][col] = "P"
-                if check_winner("P"):
-                    board[row][col] = "C"
-                    move_sound.play()
-                    return
-                board[row][col] = ""
-    empty_cells = [(r, c) for r in range(ROWS) for c in range(COLS) if board[r][c] == ""]
-    if empty_cells:
-        row, col = random.choice(empty_cells)
-        board[row][col] = "C"
-        move_sound.play()
-
-def check_winner(player):
-    for row in board:
-        if all(cell == player for cell in row):
-            return True
-    for col in range(COLS):
-        if all(board[row][col] == player for row in range(ROWS)):
-            return True
-    if all(board[i][i] == player for i in range(ROWS)):
-        return True
-    if all(board[i][ROWS-i-1] == player for i in range(ROWS)):
-        return True
-    return False
+# Function to get valid moves (basic for now)
+def get_valid_moves(row, col):
+    piece = board[row][col]
+    moves = []
+    if not piece:
+        return moves
+    # Simple pawn movement (white)
+    if piece.startswith("w") and piece.endswith("p"):
+        if row > 0 and not board[row-1][col]:  # Move forward
+            moves.append((row-1, col))
+            if row == 6 and not board[4][col]:  # Double move from start
+                moves.append((4, col))
+        if row > 0 and col > 0 and board[row-1][col-1] and board[row-1][col-1].startswith("b"):  # Capture left
+            moves.append((row-1, col-1))
+        if row > 0 and col < 7 and board[row-1][col+1] and board[row-1][col+1].startswith("b"):  # Capture right
+            moves.append((row-1, col+1))
+    return moves
 
 # Game loop
-turn = "P"
+turn = "w"  # White starts
 running = True
+clock = pygame.time.Clock()
+
 while running:
     draw_board()
     pygame.display.flip()
+    clock.tick(60)  # 60 FPS
+
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if event.type == QUIT:
             running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN and turn == "P":
-            if player_move(event.pos):
-                if check_winner("P"):
-                    print("Player wins!")
-                    running = False
-                else:
-                    turn = "C"
-    if turn == "C" and running:
-        pygame.time.wait(500)
-        computer_move()
-        if check_winner("C"):
-            print("Computer wins!")
-            running = False
-        else:
-            turn = "P"
+        elif event.type == MOUSEBUTTONDOWN:
+            x, y = event.pos
+            col, row = x // CELL_SIZE, y // CELL_SIZE
+            if 0 <= row < 8 and 0 <= col < 8:
+                if selected_piece and (row, col) in valid_moves:
+                    board[row][col] = board[selected_piece[0]][selected_piece[1]]
+                    board[selected_piece[0]][selected_piece[1]] = ""
+                    selected_piece = None
+                    valid_moves = []
+                    turn = "b" if turn == "w" else "w"
+                elif board[row][col] and board[row][col].startswith(turn):
+                    selected_piece = (row, col)
+                    valid_moves = get_valid_moves(row, col)
+
+    if not any("" in row for row in board):  # Check draw
+        print("Game is a draw!")
+        running = False
 
 pygame.quit()
 sys.exit()
