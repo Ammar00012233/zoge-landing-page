@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>Zoge Chess</title>
+    <style>
+        body {
+            background: #232323;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #start-screen {
+            margin-top: 80px;
+        }
+        .logo {
+            width: 120px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #77c353;
+            color: #fff;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.2em;
+            border-radius: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #4fa32c;
+        }
+        #chess-game {
+            margin-top: 40px;
+        }
+        #board {
+            display: grid;
+            grid-template: repeat(8, 50px) / repeat(8, 50px);
+            margin: 0 auto;
+            border: 4px solid #77c353;
+            width: 400px;
+            background: #333;
+        }
+        .square {
+            width: 50px;
+            height: 50px;
+            font-size: 32px;
+            line-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .white { background: #f0d9b5; }
+        .black { background: #b58863; }
+        .selected { outline: 2px solid #77c353; }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <!-- ضع هنا صورة شعار اللعبة إذا أردت -->
+        <h1>Play chess.<br>Improve your game.<br>Have fun!</h1>
+        <button id="get-started">ابدأ الآن</button>
+    </div>
+    <div id="chess-game" style="display:none;">
+        <h2>شطرنج ضد الكمبيوتر</h2>
+        <div id="board"></div>
+        <div id="info"></div>
+        <button id="restart">إعادة البدء</button>
+    </div>
+    <script>
+        // Chess pieces unicode
+        const pieces = {
+            wK: "♔", wQ: "♕", wR: "♖", wB: "♗", wN: "♘", wP: "♙",
+            bK: "♚", bQ: "♛", bR: "♜", bB: "♝", bN: "♞", bP: "♟"
+        };
+
+        let board, turn, selected, gameOver;
+
+        const startBtn = document.getElementById("get-started");
+        const startScreen = document.getElementById("start-screen");
+        const chessGame = document.getElementById("chess-game");
+        const boardDiv = document.getElementById("board");
+        const infoDiv = document.getElementById("info");
+        const restartBtn = document.getElementById("restart");
+
+        startBtn.onclick = () => {
+            startScreen.style.display = "none";
+            chessGame.style.display = "block";
+            startGame();
+        };
+
+        restartBtn.onclick = () => startGame();
+
+        function startGame() {
+            board = [
+                ["bR","bN","bB","bQ","bK","bB","bN","bR"],
+                ["bP","bP","bP","bP","bP","bP","bP","bP"],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                ["wP","wP","wP","wP","wP","wP","wP","wP"],
+                ["wR","wN","wB","wQ","wK","wB","wN","wR"]
+            ];
+            turn = "w";
+            selected = null;
+            gameOver = false;
+            drawBoard();
+            infoDiv.textContent = "دورك!";
+        }
+
+        function drawBoard() {
+            boardDiv.innerHTML = "";
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const sq = document.createElement("div");
+                    sq.classList.add("square");
+                    sq.classList.add((r + c) % 2 == 0 ? "white" : "black");
+                    sq.dataset.row = r;
+                    sq.dataset.col = c;
+                    if (board[r][c]) sq.textContent = pieces[board[r][c]];
+                    if (turn === "w" && !gameOver) {
+                        sq.onclick = () => playerClick(r, c, sq);
+                    }
+                    boardDiv.appendChild(sq);
+                }
+            }
+        }
+
+        function playerClick(r, c, sq) {
+            if (selected) {
+                const [sr, sc] = selected;
+                if (isValidMove(board[sr][sc], sr, sc, r, c)) {
+                    movePiece(sr, sc, r, c);
+                    turn = "b";
+                    selected = null;
+                    drawBoard();
+                    setTimeout(computerMove, 700);
+                } else {
+                    selected = null;
+                    drawBoard();
+                }
+            } else {
+                if (board[r][c] && board[r][c][0] === "w") {
+                    selected = [r, c];
+                    sq.classList.add("selected");
+                }
+            }
+        }
+
+        function movePiece(sr, sc, r, c) {
+            board[r][c] = board[sr][sc];
+            board[sr][sc] = null;
+            if (isCheckmate("b")) {
+                infoDiv.textContent = "فزت! (كش ملك)";
+                gameOver = true;
+            }
+            if (isCheckmate("w")) {
+                infoDiv.textContent = "خسرت! (كش ملك)";
+                gameOver = true;
+            }
+        }
+
+        function computerMove() {
+            if (gameOver) return;
+            let moves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] && board[r][c][0] === "b") {
+                        for (let tr = 0; tr < 8; tr++) {
+                            for (let tc = 0; tc < 8; tc++) {
+                                if (isValidMove(board[r][c], r, c, tr, tc)) {
+                                    moves.push({from: [r, c], to: [tr, tc]});
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (moves.length > 0) {
+                const move = moves[Math.floor(Math.random() * moves.length)];
+                movePiece(...move.from, ...move.to);
+                turn = "w";
+                drawBoard();
+                infoDiv.textContent = "دورك!";
+            } else {
+                infoDiv.textContent = "تعادل!";
+                gameOver = true;
+            }
+        }
+
+        function isValidMove(piece, sr, sc, r, c) {
+            if (!piece) return false;
+            if (board[r][c] && board[r][c][0] === piece[0]) return false;
+            if (piece[1] === "P") {
+                let dir = piece[0] === "w" ? -1 : 1;
+                if (sc === c && !board[r][c]) {
+                    if (r - sr === dir) return true;
+                    if ((piece[0] === "w" && sr === 6 && r === 4 && !board[5][c]) ||
+                        (piece[0] === "b" && sr === 1 && r === 3 && !board[2][c])) {
+                        return true;
+                    }
+                }
+                if (Math.abs(sc - c) === 1 && r - sr === dir && board[r][c] && board[r][c][0] !== piece[0]) {
+                    return true;
+                }
+            }
+            if (piece[1] === "R") {
+                if (sr === r || sc === c) {
+                    if (clearPath(sr, sc, r, c)) return true;
+                }
+            }
+            if (piece[1] === "N") {
+                if ((Math.abs(sr - r) === 2 && Math.abs(sc - c) === 1) ||
+                    (Math.abs(sr - r) === 1 && Math.abs(sc - c) === 2)) {
+                    return true;
+                }
+            }
+            if (piece[1] === "B") {
+                if (Math.abs(sr - r) === Math.abs(sc - c)) {
+                    if (clearPath(sr, sc, r, c)) return true;
+                }
+            }
+            if (piece[1] === "Q") {
+                if ((sr === r || sc === c || Math.abs(sr - r) === Math.abs(sc - c)) &&
+                    clearPath(sr, sc, r, c)) {
+                    return true;
+                }
+            }
+            if (piece[1] === "K") {
+                if (Math.abs(sr - r) <= 1 && Math.abs(sc - c) <= 1) return true;
+            }
+            return false;
+        }
+
+        function clearPath(sr, sc, r, c) {
+            let dr = Math.sign(r - sr);
+            let dc = Math.sign(c - sc);
+            let currR = sr + dr, currC = sc + dc;
+            while (currR !== r || currC !== c) {
+                if (board[currR][currC]) return false;
+                currR += dr;
+                currC += dc;
+            }
+            return true;
+        }
+
+        function isCheckmate(color) {
+            let kingPos = null;
+            for (let r = 0; r < 8; r++)
+                for (let c = 0; c < 8; c++)
+                    if (board[r][c] === (color + "K")) kingPos = [r, c];
+            if (!kingPos) return true;
+            return false;
+        }
+    </script>
+</body>
+</html>
