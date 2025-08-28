@@ -10,322 +10,216 @@
     body {
       font-family: 'Poppins', sans-serif;
       background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-      color: #333;
-      min-height: 100vh;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      padding: 10px;
-      overflow: hidden;
-      touch-action: manipulation;
+      align-items: center;
+      min-height: 100vh;
     }
     .container {
       text-align: center;
-      max-width: 100%;
-      width: 90vw;
-      position: relative;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 10px;
+      width: 95vw;
+      max-width: 600px;
     }
     h1 {
-      font-size: 1.8rem;
-      color: #ff6b6b;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    #logo {
-      width: 40px;
-      height: auto;
-      margin-left: 10px;
-      border-radius: 5px;
-    }
-    #chessboard {
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      border-radius: 10px;
-      max-width: 100%;
-      height: auto;
-      animation: fadeIn 0.8s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    #status {
-      margin-top: 10px;
-      font-size: 1rem;
+      font-size: 1.6rem;
+      margin-bottom: 10px;
       color: #fff;
       text-shadow: 1px 1px 2px #000;
     }
-    @media (max-width: 600px) {
-      #chessboard { max-width: 90vw; }
-      h1 { font-size: 1.5rem; }
-      #logo { width: 30px; }
+    #chessboard {
+      border-radius: 10px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      touch-action: manipulation;
+    }
+    #status {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>ZOGE Chess</h1>
-      <img id="logo" src="https://i.postimg.cc/J0dDKhzB/grok-image-xcu1re3.jpg" alt="Chess Couple Logo">
-    </div>
+    <h1>ZOGE Chess</h1>
     <canvas id="chessboard"></canvas>
     <div id="status">White's turn</div>
   </div>
 
-  <script>
-    const canvas = document.getElementById('chessboard');
-    const ctx = canvas.getContext('2d');
+<script>
+const canvas = document.getElementById("chessboard");
+const ctx = canvas.getContext("2d");
+let cellSize;
 
-    // Dynamic size
-    let cellSize = Math.min(window.innerWidth * 0.9 / 8, 60);
-    canvas.width = cellSize * 8;
-    canvas.height = cellSize * 8;
+// resize dynamically
+function resizeBoard() {
+  cellSize = Math.min(window.innerWidth * 0.95 / 8, 70);
+  canvas.width = cellSize * 8;
+  canvas.height = cellSize * 8;
+  drawBoard();
+}
 
-    // Piece images (free from Wikimedia Commons)
-    const pieces = {
-      'wp': 'https://upload.wikimedia.org/wikipedia/commons/0/04/Chess_plt60.png',
-      'wn': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Chess_nlt60.png',
-      'wb': 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_blt60.png',
-      'wr': 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Chess_rlt60.png',
-      'wq': 'https://upload.wikimedia.org/wikipedia/commons/4/49/Chess_qlt60.png',
-      'wk': 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Chess_klt60.png',
-      'bp': 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Chess_pdt60.png',
-      'bn': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Chess_ndt60.png',
-      'bb': 'https://upload.wikimedia.org/wikipedia/commons/8/81/Chess_bdt60.png',
-      'br': 'https://upload.wikimedia.org/wikipedia/commons/a/af/Chess_rdt60.png',
-      'bq': 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Chess_qdt60.png',
-      'bk': 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Chess_kdt60.png'
+// piece images
+const pieces = {
+  'wp': 'https://upload.wikimedia.org/wikipedia/commons/0/04/Chess_plt60.png',
+  'wn': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Chess_nlt60.png',
+  'wb': 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_blt60.png',
+  'wr': 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Chess_rlt60.png',
+  'wq': 'https://upload.wikimedia.org/wikipedia/commons/4/49/Chess_qlt60.png',
+  'wk': 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Chess_klt60.png',
+  'bp': 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Chess_pdt60.png',
+  'bn': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Chess_ndt60.png',
+  'bb': 'https://upload.wikimedia.org/wikipedia/commons/8/81/Chess_bdt60.png',
+  'br': 'https://upload.wikimedia.org/wikipedia/commons/a/af/Chess_rdt60.png',
+  'bq': 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Chess_qdt60.png',
+  'bk': 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Chess_kdt60.png'
+};
+
+const images = {};
+let loaded = 0;
+const totalImages = Object.keys(pieces).length;
+
+function loadImages() {
+  for (let key in pieces) {
+    images[key] = new Image();
+    images[key].onload = () => {
+      loaded++;
+      if (loaded === totalImages) {
+        resizeBoard();
+      }
     };
+    images[key].src = pieces[key];
+  }
+}
 
-    // Load images
-    const images = {};
-    let imagesLoaded = 0;
-    const totalImages = Object.keys(pieces).length;
+// board state
+let board = [
+  ['br','bn','bb','bq','bk','bb','bn','br'],
+  ['bp','bp','bp','bp','bp','bp','bp','bp'],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['','','','','','','',''],
+  ['wp','wp','wp','wp','wp','wp','wp','wp'],
+  ['wr','wn','wb','wq','wk','wb','wn','wr']
+];
 
-    function loadImages() {
-      for (let key in pieces) {
-        images[key] = new Image();
-        images[key].onload = () => {
-          imagesLoaded++;
-          if (imagesLoaded === totalImages) {
-            initializeGame();
-          }
-        };
-        images[key].onerror = () => {
-          document.getElementById('status').textContent = 'Error loading images. Try again later.';
-        };
-        images[key].src = pieces[key];
+let selected = null;
+let turn = "w";
+
+// draw board
+function drawBoard() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for (let y=0; y<8; y++) {
+    for (let x=0; x<8; x++) {
+      ctx.fillStyle = (x+y)%2===0 ? "#f0d9b5" : "#b58863";
+      ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+
+      let piece = board[y][x];
+      if (piece) {
+        ctx.drawImage(images[piece], x*cellSize, y*cellSize, cellSize, cellSize);
       }
     }
+  }
+  if (selected) {
+    ctx.fillStyle = "rgba(255,255,0,0.4)";
+    ctx.fillRect(selected.x*cellSize, selected.y*cellSize, cellSize, cellSize);
+  }
+  document.getElementById("status").textContent = (turn==="w"?"White":"Black") + "'s turn";
+}
 
-    // Board state
-    let board = [
-      ['br', 'bn', 'bb', 'bq', 'bk', 'bb', 'bn', 'br'],
-      ['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
-      ['', '', '', '', '', '', '', ''],
-      ['', '', '', '', '', '', '', ''],
-      ['', '', '', '', '', '', '', ''],
-      ['', '', '', '', '', '', '', ''],
-      ['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-      ['wr', 'wn', 'wb', 'wq', 'wk', 'wb', 'wn', 'wr']
-    ];
+// moves
+function getMoves(piece, x, y) {
+  const moves = [];
+  if (!piece) return moves;
+  const color = piece[0], type = piece[1];
 
-    let selected = null;
-    let turn = 'w'; // 'w' for white, 'b' for black
-
-    // Draw board
-    function drawBoard() {
-      for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-          ctx.fillStyle = (x + y) % 2 === 0 ? '#f0d9b5' : '#b58863';
-          ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-          const piece = board[y][x];
-          if (piece && images[piece].complete) {
-            ctx.drawImage(images[piece], x * cellSize, y * cellSize, cellSize, cellSize);
-          }
-        }
-      }
-      if (selected) {
-        ctx.globalAlpha = 0.5;
-        ctx.fillStyle = 'yellow';
-        ctx.fillRect(selected.x * cellSize, selected.y * cellSize, cellSize, cellSize);
-        ctx.globalAlpha = 1.0;
-      }
-      document.getElementById('status').textContent = `${turn === 'w' ? 'White' : 'Black'}'s turn`;
+  if (type==="p") {
+    const dir = color==="w" ? -1 : 1;
+    if (!board[y+dir]?.[x]) moves.push({x,y:y+dir});
+    if ((color==="w" && y===6)||(color==="b"&&y===1)) {
+      if (!board[y+dir]?.[x] && !board[y+2*dir]?.[x]) moves.push({x,y:y+2*dir});
     }
-
-    // Get moves for all pieces
-    function getMoves(piece, x, y) {
-      const moves = [];
-      if (!piece) return moves;
-
-      // Pawn
-      if (piece[1] === 'p') {
-        const dir = piece[0] === 'w' ? -1 : 1;
-        const startY = piece[0] === 'w' ? 6 : 1;
-        if (y + dir >= 0 && y + dir < 8 && !board[y + dir][x]) {
-          moves.push({x, y: y + dir});
-          if (y === startY && !board[y + 2 * dir][x]) {
-            moves.push({x, y: y + 2 * dir});
-          }
-        }
-        if (y + dir >= 0 && y + dir < 8) {
-          if (x - 1 >= 0 && board[y + dir][x - 1] && board[y + dir][x - 1][0] !== piece[0]) {
-            moves.push({x: x - 1, y: y + dir});
-          }
-          if (x + 1 < 8 && board[y + dir][x + 1] && board[y + dir][x + 1][0] !== piece[0]) {
-            moves.push({x: x + 1, y: y + dir});
-          }
-        }
-      }
-
-      // Rook
-      if (piece[1] === 'r') {
-        for (let i = x + 1; i < 8; i++) if (!board[y][i] || board[y][i][0] !== piece[0]) moves.push({x: i, y}); else break;
-        for (let i = x - 1; i >= 0; i--) if (!board[y][i] || board[y][i][0] !== piece[0]) moves.push({x: i, y}); else break;
-        for (let i = y + 1; i < 8; i++) if (!board[i][x] || board[i][x][0] !== piece[0]) moves.push({x, y: i}); else break;
-        for (let i = y - 1; i >= 0; i--) if (!board[i][x] || board[i][x][0] !== piece[0]) moves.push({x, y: i}); else break;
-      }
-
-      // Knight
-      if (piece[1] === 'n') {
-        const knightMoves = [[2, 1], [2, -1], [-2, 1], [-2, -1], [1, 2], [1, -2], [-1, 2], [-1, -2]];
-        for (let [dx, dy] of knightMoves) {
-          let newX = x + dx, newY = y + dy;
-          if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8 && (!board[newY][newX] || board[newY][newX][0] !== piece[0])) {
-            moves.push({x: newX, y: newY});
-          }
-        }
-      }
-
-      // Bishop
-      if (piece[1] === 'b') {
-        for (let i = 1; x + i < 8 && y + i < 8; i++) if (!board[y + i][x + i] || board[y + i][x + i][0] !== piece[0]) moves.push({x: x + i, y: y + i}); else break;
-        for (let i = 1; x - i >= 0 && y - i >= 0; i++) if (!board[y - i][x - i] || board[y - i][x - i][0] !== piece[0]) moves.push({x: x - i, y: y - i}); else break;
-        for (let i = 1; x + i < 8 && y - i >= 0; i++) if (!board[y - i][x + i] || board[y - i][x + i][0] !== piece[0]) moves.push({x: x + i, y: y - i}); else break;
-        for (let i = 1; x - i >= 0 && y + i < 8; i++) if (!board[y + i][x - i] || board[y + i][x - i][0] !== piece[0]) moves.push({x: x - i, y: y + i}); else break;
-      }
-
-      // Queen
-      if (piece[1] === 'q') {
-        for (let i = x + 1; i < 8; i++) if (!board[y][i] || board[y][i][0] !== piece[0]) moves.push({x: i, y}); else break;
-        for (let i = x - 1; i >= 0; i--) if (!board[y][i] || board[y][i][0] !== piece[0]) moves.push({x: i, y}); else break;
-        for (let i = y + 1; i < 8; i++) if (!board[i][x] || board[i][x][0] !== piece[0]) moves.push({x, y: i}); else break;
-        for (let i = y - 1; i >= 0; i--) if (!board[i][x] || board[i][x][0] !== piece[0]) moves.push({x, y: i}); else break;
-        for (let i = 1; x + i < 8 && y + i < 8; i++) if (!board[y + i][x + i] || board[y + i][x + i][0] !== piece[0]) moves.push({x: x + i, y: y + i}); else break;
-        for (let i = 1; x - i >= 0 && y - i >= 0; i++) if (!board[y - i][x - i] || board[y - i][x - i][0] !== piece[0]) moves.push({x: x - i, y: y - i}); else break;
-        for (let i = 1; x + i < 8 && y - i >= 0; i++) if (!board[y - i][x + i] || board[y - i][x + i][0] !== piece[0]) moves.push({x: x + i, y: y - i}); else break;
-        for (let i = 1; x - i >= 0 && y + i < 8; i++) if (!board[y + i][x - i] || board[y + i][x - i][0] !== piece[0]) moves.push({x: x - i, y: y + i}); else break;
-      }
-
-      // King
-      if (piece[1] === 'k') {
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            let newX = x + dx, newY = y + dy;
-            if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8 && (!board[newY][newX] || board[newY][newX][0] !== piece[0])) {
-              moves.push({x: newX, y: newY});
-            }
-          }
-        }
-      }
-
-      return moves;
+    for (let dx of [-1,1]) {
+      if (board[y+dir]?.[x+dx] && board[y+dir][x+dx][0]!==color)
+        moves.push({x:x+dx,y:y+dir});
     }
+  }
 
-    // Touch and click handler
-    function handleInteraction(e) {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) / cellSize;
-      const y = Math.floor((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) / cellSize;
-      if (x >= 0 && x < 8 && y >= 0 && y < 8) {
-        if (selected && getMoves(board[selected.y][selected.x], selected.x, selected.y).some(m => m.x === x && m.y === y)) {
-          board[y][x] = board[selected.y][selected.x];
-          board[selected.y][selected.x] = '';
-          selected = null;
-          turn = turn === 'w' ? 'b' : 'w';
-          // AI move (if black's turn)
-          if (turn === 'b') {
-            setTimeout(() => {
-              let bestMove = null;
-              let bestScore = -Infinity;
-              for (let y = 0; y < 8; y++) {
-                for (let x = 0; x < 8; x++) {
-                  if (board[y][x] && board[y][x][0] === 'b') {
-                    const moves = getMoves(board[y][x], x, y);
-                    for (let move of moves) {
-                      const newBoard = board.map(row => [...row]);
-                      newBoard[move.y][move.x] = newBoard[y][x];
-                      newBoard[y][x] = '';
-                      const score = evaluateBoard(newBoard);
-                      if (score > bestScore) {
-                        bestScore = score;
-                        bestMove = {from: {x, y}, to: move};
-                      }
-                    }
-                  }
-                }
-              }
-              if (bestMove) {
-                board[bestMove.to.y][bestMove.to.x] = board[bestMove.from.y][bestMove.from.x];
-                board[bestMove.from.y][bestMove.from.x] = '';
-                turn = 'w';
-              }
-              drawBoard();
-            }, 500);
-          }
-        } else {
-          const piece = board[y][x];
-          if (piece && piece[0] === turn) {
-            selected = {x, y};
-          } else {
-            selected = null;
-          }
-        }
-        drawBoard();
+  if (type==="r"||type==="q") {
+    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
+      for (let i=1;i<8;i++) {
+        let nx=x+dx*i, ny=y+dy*i;
+        if(nx<0||ny<0||nx>7||ny>7) break;
+        if (!board[ny][nx]) moves.push({x:nx,y:ny});
+        else { if (board[ny][nx][0]!==color) moves.push({x:nx,y:ny}); break; }
       }
-    }
-
-    // Evaluate board for AI
-    function evaluateBoard(board) {
-      let score = 0;
-      for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-          if (board[y][x]) {
-            const value = { 'p': 1, 'n': 3, 'b': 3, 'r': 5, 'q': 9, 'k': 100 }[board[y][x][1]];
-            score += (board[y][x][0] === 'b' ? 1 : -1) * value;
-          }
-        }
-      }
-      return score;
-    }
-
-    // Event listeners
-    canvas.addEventListener('click', handleInteraction);
-    canvas.addEventListener('touchstart', handleInteraction, { passive: false });
-
-    // Resize handler
-    window.addEventListener('resize', () => {
-      cellSize = Math.min(window.innerWidth * 0.9 / 8, 60);
-      canvas.width = cellSize * 8;
-      canvas.height = cellSize * 8;
-      drawBoard();
     });
+  }
 
-    // Initialize game after images load
-    function initializeGame() {
-      drawBoard();
+  if (type==="b"||type==="q") {
+    [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx,dy])=>{
+      for (let i=1;i<8;i++) {
+        let nx=x+dx*i, ny=y+dy*i;
+        if(nx<0||ny<0||nx>7||ny>7) break;
+        if (!board[ny][nx]) moves.push({x:nx,y:ny});
+        else { if (board[ny][nx][0]!==color) moves.push({x:nx,y:ny}); break; }
+      }
+    });
+  }
+
+  if (type==="n") {
+    [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]].forEach(([dx,dy])=>{
+      let nx=x+dx, ny=y+dy;
+      if(nx>=0&&ny>=0&&nx<8&&ny<8 && (!board[ny][nx]||board[ny][nx][0]!==color))
+        moves.push({x:nx,y:ny});
+    });
+  }
+
+  if (type==="k") {
+    for (let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
+      if(dx===0&&dy===0)continue;
+      let nx=x+dx, ny=y+dy;
+      if(nx>=0&&ny>=0&&nx<8&&ny<8 && (!board[ny][nx]||board[ny][nx][0]!==color))
+        moves.push({x:nx,y:ny});
     }
+  }
 
-    // Start loading
-    loadImages();
-  </script>
+  return moves;
+}
+
+// interaction
+function handleInteraction(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.floor((clientX-rect.left)/cellSize);
+  const y = Math.floor((clientY-rect.top)/cellSize);
+
+  if (selected) {
+    const moves = getMoves(board[selected.y][selected.x], selected.x, selected.y);
+    if (moves.some(m=>m.x===x&&m.y===y)) {
+      board[y][x] = board[selected.y][selected.x];
+      board[selected.y][selected.x] = '';
+      selected = null;
+      turn = turn==="w"?"b":"w";
+    } else {
+      selected = null;
+    }
+  } else {
+    if (board[y][x] && board[y][x][0]===turn) selected={x,y};
+  }
+  drawBoard();
+}
+
+canvas.addEventListener("click",e=>handleInteraction(e.clientX,e.clientY));
+canvas.addEventListener("touchstart",e=>{
+  e.preventDefault();
+  handleInteraction(e.touches[0].clientX,e.touches[0].clientY);
+},{passive:false});
+
+window.addEventListener("resize", resizeBoard);
+
+loadImages();
+</script>
 </body>
 </html>
