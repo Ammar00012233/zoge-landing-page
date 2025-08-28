@@ -1,225 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>ZOGE Chess</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #ff6b6b, #ffd93d);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    .container {
-      text-align: center;
-      width: 95vw;
-      max-width: 600px;
-    }
-    h1 {
-      font-size: 1.6rem;
-      margin-bottom: 10px;
-      color: #fff;
-      text-shadow: 1px 1px 2px #000;
-    }
-    #chessboard {
-      border-radius: 10px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      touch-action: manipulation;
-    }
-    #status {
-      margin-top: 10px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #fff;
-      text-shadow: 1px 1px 2px #000;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Zoge Chess</title>
+    <style>
+        body {
+            background: #232323;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #start-screen {
+            margin-top: 80px;
+        }
+        button {
+            background: #77c353;
+            color: #fff;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.2em;
+            border-radius: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #4fa32c;
+        }
+        #chess-game {
+            margin-top: 40px;
+        }
+        #board {
+            display: grid;
+            grid-template: repeat(8, 50px) / repeat(8, 50px);
+            margin: 0 auto;
+            border: 4px solid #77c353;
+            width: 400px;
+            background: #333;
+        }
+        .square {
+            width: 50px;
+            height: 50px;
+            font-size: 32px;
+            line-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.2s;
+            user-select: none;
+        }
+        /* مربعات كلاسيك */
+        .white { background: #f0d9b5; } /* بني فاتح */
+        .black { background: #b58863; } /* بني غامق */
+
+        /* White player pieces */
+        .piece-white { 
+            color: #ffffff; /* أبيض */
+            text-shadow: 1px 1px 2px #000; 
+            font-weight: bold;
+        }
+        /* Black computer pieces */
+        .piece-black { 
+            color: #000000; /* أسود */
+            text-shadow: 1px 1px 2px #fff; 
+            font-weight: bold;
+        }
+
+        .selected { outline: 2px solid #77c353; }
+        .move-target {
+            box-shadow: 0 0 0 4px #77c353 inset !important;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>ZOGE Chess</h1>
-    <canvas id="chessboard"></canvas>
-    <div id="status">White's turn</div>
-  </div>
+    <div id="start-screen">
+        <h1>Play Chess.<br>Improve your game.<br>Have fun!</h1>
+        <button id="get-started">Start Now</button>
+    </div>
+    <div id="chess-game" style="display:none;">
+        <h2>Chess vs Computer</h2>
+        <div id="board"></div>
+        <div id="info"></div>
+        <button id="restart">Restart</button>
+    </div>
+    
+    <!-- Sounds -->
+    <audio id="move-sound" src="https://assets.mixkit.co/sfx/download/mixkit-chess-piece-move-2107.mp3"></audio>
+    <audio id="win-sound" src="https://assets.mixkit.co/sfx/download/mixkit-winning-chimes-2015.mp3"></audio>
+    <audio id="draw-sound" src="https://assets.mixkit.co/sfx/download/mixkit-game-level-completed-2059.mp3"></audio>
 
-<script>
-const canvas = document.getElementById("chessboard");
-const ctx = canvas.getContext("2d");
-let cellSize;
+    <script>
+        const pieces = {
+            wK: "♔", wQ: "♕", wR: "♖", wB: "♗", wN: "♘", wP: "♙",
+            bK: "♚", bQ: "♛", bR: "♜", bB: "♝", bN: "♞", bP: "♟"
+        };
 
-// resize dynamically
-function resizeBoard() {
-  cellSize = Math.min(window.innerWidth * 0.95 / 8, 70);
-  canvas.width = cellSize * 8;
-  canvas.height = cellSize * 8;
-  drawBoard();
-}
+        let board, turn, selected, gameOver, moveTargets = [];
+        const startBtn = document.getElementById("get-started");
+        const startScreen = document.getElementById("start-screen");
+        const chessGame = document.getElementById("chess-game");
+        const boardDiv = document.getElementById("board");
+        const infoDiv = document.getElementById("info");
+        const restartBtn = document.getElementById("restart");
+        const moveSound = document.getElementById("move-sound");
+        const winSound = document.getElementById("win-sound");
+        const drawSound = document.getElementById("draw-sound");
 
-// piece images
-const pieces = {
-  'wp': 'https://upload.wikimedia.org/wikipedia/commons/0/04/Chess_plt60.png',
-  'wn': 'https://upload.wikimedia.org/wikipedia/commons/2/28/Chess_nlt60.png',
-  'wb': 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Chess_blt60.png',
-  'wr': 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Chess_rlt60.png',
-  'wq': 'https://upload.wikimedia.org/wikipedia/commons/4/49/Chess_qlt60.png',
-  'wk': 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Chess_klt60.png',
-  'bp': 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Chess_pdt60.png',
-  'bn': 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Chess_ndt60.png',
-  'bb': 'https://upload.wikimedia.org/wikipedia/commons/8/81/Chess_bdt60.png',
-  'br': 'https://upload.wikimedia.org/wikipedia/commons/a/af/Chess_rdt60.png',
-  'bq': 'https://upload.wikimedia.org/wikipedia/commons/8/8e/Chess_qdt60.png',
-  'bk': 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Chess_kdt60.png'
-};
+        startBtn.onclick = () => {
+            startScreen.style.display = "none";
+            chessGame.style.display = "block";
+            startGame();
+        };
 
-const images = {};
-let loaded = 0;
-const totalImages = Object.keys(pieces).length;
+        restartBtn.onclick = () => startGame();
 
-function loadImages() {
-  for (let key in pieces) {
-    images[key] = new Image();
-    images[key].onload = () => {
-      loaded++;
-      if (loaded === totalImages) {
-        resizeBoard();
-      }
-    };
-    images[key].src = pieces[key];
-  }
-}
+        function startGame() {
+            board = [
+                ["bR","bN","bB","bQ","bK","bB","bN","bR"],
+                ["bP","bP","bP","bP","bP","bP","bP","bP"],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                ["wP","wP","wP","wP","wP","wP","wP","wP"],
+                ["wR","wN","wB","wQ","wK","wB","wN","wR"]
+            ];
+            turn = "w";
+            selected = null;
+            gameOver = false;
+            moveTargets = [];
+            drawBoard();
+            infoDiv.textContent = "Your turn!";
+        }
 
-// board state
-let board = [
-  ['br','bn','bb','bq','bk','bb','bn','br'],
-  ['bp','bp','bp','bp','bp','bp','bp','bp'],
-  ['','','','','','','',''],
-  ['','','','','','','',''],
-  ['','','','','','','',''],
-  ['','','','','','','',''],
-  ['wp','wp','wp','wp','wp','wp','wp','wp'],
-  ['wr','wn','wb','wq','wk','wb','wn','wr']
-];
+        function drawBoard() {
+            boardDiv.innerHTML = "";
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const sq = document.createElement("div");
+                    sq.classList.add("square");
+                    sq.classList.add((r + c) % 2 == 0 ? "white" : "black");
+                    sq.dataset.row = r;
+                    sq.dataset.col = c;
+                    if (board[r][c]) {
+                        if (board[r][c][0] === "w") {
+                            sq.innerHTML = `<span class="piece-white">${pieces[board[r][c]]}</span>`;
+                        } else {
+                            sq.innerHTML = `<span class="piece-black">${pieces[board[r][c]]}</span>`;
+                        }
+                    }
+                    if (moveTargets.some(([tr, tc]) => tr === r && tc === c)) {
+                        sq.classList.add("move-target");
+                        sq.onclick = () => playerMoveTo(r, c);
+                    } else if (selected && selected[0] === r && selected[1] === c) {
+                        sq.classList.add("selected");
+                        sq.onclick = () => selectPiece(r, c);
+                    } else if (turn === "w" && !gameOver && board[r][c] && board[r][c][0] === "w") {
+                        sq.onclick = () => selectPiece(r, c);
+                    }
+                    boardDiv.appendChild(sq);
+                }
+            }
+        }
 
-let selected = null;
-let turn = "w";
+        function selectPiece(r, c) {
+            if (turn !== "w" || gameOver) return;
+            selected = [r, c];
+            moveTargets = getAvailableMoves(board[r][c], r, c);
+            drawBoard();
+        }
 
-// draw board
-function drawBoard() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  for (let y=0; y<8; y++) {
-    for (let x=0; x<8; x++) {
-      ctx.fillStyle = (x+y)%2===0 ? "#f0d9b5" : "#b58863";
-      ctx.fillRect(x*cellSize, y*cellSize, cellSize, cellSize);
+        function playerMoveTo(r, c) {
+            if (!selected) return;
+            const [sr, sc] = selected;
+            movePiece(sr, sc, r, c);
+            moveSound.currentTime = 0; moveSound.play();
+            turn = "b";
+            selected = null;
+            moveTargets = [];
+            drawBoard();
+            setTimeout(computerMove, 700);
+        }
 
-      let piece = board[y][x];
-      if (piece) {
-        ctx.drawImage(images[piece], x*cellSize, y*cellSize, cellSize, cellSize);
-      }
-    }
-  }
-  if (selected) {
-    ctx.fillStyle = "rgba(255,255,0,0.4)";
-    ctx.fillRect(selected.x*cellSize, selected.y*cellSize, cellSize, cellSize);
-  }
-  document.getElementById("status").textContent = (turn==="w"?"White":"Black") + "'s turn";
-}
+        function movePiece(sr, sc, r, c) {
+            board[r][c] = board[sr][sc];
+            board[sr][sc] = null;
+            if (board[r][c] === "wK" || board[r][c] === "bK") {
+                checkGameOver();
+            }
+        }
 
-// moves
-function getMoves(piece, x, y) {
-  const moves = [];
-  if (!piece) return moves;
-  const color = piece[0], type = piece[1];
+        function computerMove() {
+            if (gameOver) return;
+            let moves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] && board[r][c][0] === "b") {
+                        let avMoves = getAvailableMoves(board[r][c], r, c);
+                        avMoves.forEach(([tr, tc]) => {
+                            moves.push({from: [r, c], to: [tr, tc]});
+                        });
+                    }
+                }
+            }
+            if (moves.length > 0) {
+                const move = moves[Math.floor(Math.random() * moves.length)];
+                movePiece(...move.from, ...move.to);
+                moveSound.currentTime = 0; moveSound.play();
+                turn = "w";
+                drawBoard();
+                infoDiv.textContent = "Your turn!";
+            } else {
+                infoDiv.textContent = "Draw!";
+                drawSound.play();
+                gameOver = true;
+            }
+        }
 
-  if (type==="p") {
-    const dir = color==="w" ? -1 : 1;
-    if (!board[y+dir]?.[x]) moves.push({x,y:y+dir});
-    if ((color==="w" && y===6)||(color==="b"&&y===1)) {
-      if (!board[y+dir]?.[x] && !board[y+2*dir]?.[x]) moves.push({x,y:y+2*dir});
-    }
-    for (let dx of [-1,1]) {
-      if (board[y+dir]?.[x+dx] && board[y+dir][x+dx][0]!==color)
-        moves.push({x:x+dx,y:y+dir});
-    }
-  }
+        function checkGameOver() {
+            let kings = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] === "wK") kings.push("w");
+                    if (board[r][c] === "bK") kings.push("b");
+                }
+            }
+            if (!kings.includes("w")) {
+                infoDiv.textContent = "Computer Wins!";
+                winSound.play();
+                gameOver = true;
+            } else if (!kings.includes("b")) {
+                infoDiv.textContent = "You Win 🎉";
+                winSound.play();
+                gameOver = true;
+            }
+        }
 
-  if (type==="r"||type==="q") {
-    [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dy])=>{
-      for (let i=1;i<8;i++) {
-        let nx=x+dx*i, ny=y+dy*i;
-        if(nx<0||ny<0||nx>7||ny>7) break;
-        if (!board[ny][nx]) moves.push({x:nx,y:ny});
-        else { if (board[ny][nx][0]!==color) moves.push({x:nx,y:ny}); break; }
-      }
-    });
-  }
+        function isValidMove(piece, sr, sc, r, c) {
+            if (!piece) return false;
+            if (board[r][c] && board[r][c][0] === piece[0]) return false;
+            if (piece[1] === "P") {
+                let dir = piece[0] === "w" ? -1 : 1;
+                if (sc === c && !board[r][c]) {
+                    if (r - sr === dir) return true;
+                    if ((piece[0] === "w" && sr === 6 && r === 4 && !board[5][c]) ||
+                        (piece[0] === "b" && sr === 1 && r === 3 && !board[2][c])) {
+                        return true;
+                    }
+                }
+                if (Math.abs(sc - c) === 1 && r - sr === dir && board[r][c] && board[r][c][0] !== piece[0]) {
+                    return true;
+                }
+            }
+            if (piece[1] === "R") {
+                if (sr === r || sc === c) {
+                    if (clearPath(sr, sc, r, c)) return true;
+                }
+            }
+            if (piece[1] === "N") {
+                if ((Math.abs(sr - r) === 2 && Math.abs(sc - c) === 1) ||
+                    (Math.abs(sr - r) === 1 && Math.abs(sc - c) === 2)) {
+                    return true;
+                }
+            }
+            if (piece[1] === "B") {
+                if (Math.abs(sr - r) === Math.abs(sc - c)) {
+                    if (clearPath(sr, sc, r, c)) return true;
+                }
+            }
+            if (piece[1] === "Q") {
+                if ((sr === r || sc === c || Math.abs(sr - r) === Math.abs(sc - c)) &&
+                    clearPath(sr, sc, r, c)) {
+                    return true;
+                }
+            }
+            if (piece[1] === "K") {
+                if (Math.abs(sr - r) <= 1 && Math.abs(sc - c) <= 1) return true;
+            }
+            return false;
+        }
 
-  if (type==="b"||type==="q") {
-    [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dx,dy])=>{
-      for (let i=1;i<8;i++) {
-        let nx=x+dx*i, ny=y+dy*i;
-        if(nx<0||ny<0||nx>7||ny>7) break;
-        if (!board[ny][nx]) moves.push({x:nx,y:ny});
-        else { if (board[ny][nx][0]!==color) moves.push({x:nx,y:ny}); break; }
-      }
-    });
-  }
+        function clearPath(sr, sc, r, c) {
+            let dr = Math.sign(r - sr);
+            let dc = Math.sign(c - sc);
+            let currR = sr + dr, currC = sc + dc;
+            while (currR !== r || currC !== c) {
+                if (board[currR][currC]) return false;
+                currR += dr;
+                currC += dc;
+            }
+            return true;
+        }
 
-  if (type==="n") {
-    [[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]].forEach(([dx,dy])=>{
-      let nx=x+dx, ny=y+dy;
-      if(nx>=0&&ny>=0&&nx<8&&ny<8 && (!board[ny][nx]||board[ny][nx][0]!==color))
-        moves.push({x:nx,y:ny});
-    });
-  }
-
-  if (type==="k") {
-    for (let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++){
-      if(dx===0&&dy===0)continue;
-      let nx=x+dx, ny=y+dy;
-      if(nx>=0&&ny>=0&&nx<8&&ny<8 && (!board[ny][nx]||board[ny][nx][0]!==color))
-        moves.push({x:nx,y:ny});
-    }
-  }
-
-  return moves;
-}
-
-// interaction
-function handleInteraction(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  const x = Math.floor((clientX-rect.left)/cellSize);
-  const y = Math.floor((clientY-rect.top)/cellSize);
-
-  if (selected) {
-    const moves = getMoves(board[selected.y][selected.x], selected.x, selected.y);
-    if (moves.some(m=>m.x===x&&m.y===y)) {
-      board[y][x] = board[selected.y][selected.x];
-      board[selected.y][selected.x] = '';
-      selected = null;
-      turn = turn==="w"?"b":"w";
-    } else {
-      selected = null;
-    }
-  } else {
-    if (board[y][x] && board[y][x][0]===turn) selected={x,y};
-  }
-  drawBoard();
-}
-
-canvas.addEventListener("click",e=>handleInteraction(e.clientX,e.clientY));
-canvas.addEventListener("touchstart",e=>{
-  e.preventDefault();
-  handleInteraction(e.touches[0].clientX,e.touches[0].clientY);
-},{passive:false});
-
-window.addEventListener("resize", resizeBoard);
-
-loadImages();
-</script>
+        function getAvailableMoves(piece, sr, sc) {
+            let moves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (isValidMove(piece, sr, sc, r, c)) {
+                        moves.push([r, c]);
+                    }
+                }
+            }
+            return moves;
+        }
+    </script>
 </body>
 </html>
