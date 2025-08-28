@@ -1,138 +1,309 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ZOGE Chess</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: linear-gradient(135deg, #2c3e50, #34495e);
-    }
-    #board {
-      width: 480px;
-      height: 480px;
-      margin: auto;
-      border: 4px solid #222;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .highlight {
-      background-color: rgba(255, 255, 0, 0.6) !important;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Zoge Chess</title>
+    <style>
+        body {
+            background: #232323;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #start-screen {
+            margin-top: 80px;
+        }
+        button {
+            background: #77c353;
+            color: #fff;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.2em;
+            border-radius: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #4fa32c;
+        }
+        #chess-game {
+            margin-top: 40px;
+        }
+        #board {
+            display: grid;
+            grid-template: repeat(8, 50px) / repeat(8, 50px);
+            margin: 0 auto;
+            border: 4px solid #77c353;
+            width: 400px;
+            background: #333;
+        }
+        .square {
+            width: 50px;
+            height: 50px;
+            font-size: 32px;
+            line-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: box-shadow 0.2s;
+            user-select: none;
+        }
+        /* مربعات كلاسيك */
+        .white { background: #f0d9b5; } /* بني فاتح */
+        .black { background: #b58863; } /* بني غامق */
+
+        /* White player pieces */
+        .piece-white { 
+            color: #ffffff; /* أبيض */
+            text-shadow: 1px 1px 2px #000; 
+            font-weight: bold;
+        }
+        /* Black computer pieces */
+        .piece-black { 
+            color: #000000; /* أسود */
+            text-shadow: 1px 1px 2px #fff; 
+            font-weight: bold;
+        }
+
+        .selected { outline: 2px solid #77c353; }
+        .move-target {
+            box-shadow: 0 0 0 4px #77c353 inset !important;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <div id="board"></div>
-  <audio id="moveSound" src="https://www.soundjay.com/buttons/sounds/button-16.mp3"></audio>
+    <div id="start-screen">
+        <h1>Play Chess.<br>Improve your game.<br>Have fun!</h1>
+        <button id="get-started">Start Now</button>
+    </div>
+    <div id="chess-game" style="display:none;">
+        <h2>Chess vs Computer</h2>
+        <div id="board"></div>
+        <div id="info"></div>
+        <button id="restart">Restart</button>
+    </div>
+    
+    <!-- Sounds -->
+    <audio id="move-sound" src="https://assets.mixkit.co/sfx/download/mixkit-chess-piece-move-2107.mp3"></audio>
+    <audio id="win-sound" src="https://assets.mixkit.co/sfx/download/mixkit-winning-chimes-2015.mp3"></audio>
+    <audio id="draw-sound" src="https://assets.mixkit.co/sfx/download/mixkit-game-level-completed-2059.mp3"></audio>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.13.4/chess.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css"/>
+    <script>
+        const pieces = {
+            wK: "♔", wQ: "♕", wR: "♖", wB: "♗", wN: "♘", wP: "♙",
+            bK: "♚", bQ: "♛", bR: "♜", bB: "♝", bN: "♞", bP: "♟"
+        };
 
-  <script>
-    var board = null;
-    var game = new Chess();
-    var moveSound = document.getElementById("moveSound");
+        let board, turn, selected, gameOver, moveTargets = [];
+        const startBtn = document.getElementById("get-started");
+        const startScreen = document.getElementById("start-screen");
+        const chessGame = document.getElementById("chess-game");
+        const boardDiv = document.getElementById("board");
+        const infoDiv = document.getElementById("info");
+        const restartBtn = document.getElementById("restart");
+        const moveSound = document.getElementById("move-sound");
+        const winSound = document.getElementById("win-sound");
+        const drawSound = document.getElementById("draw-sound");
 
-    function onDragStart(source, piece) {
-      if (game.game_over()) return false;
-      if (piece.search(/^b/) !== -1) return false; // اللاعب أبيض فقط
-    }
+        startBtn.onclick = () => {
+            startScreen.style.display = "none";
+            chessGame.style.display = "block";
+            startGame();
+        };
 
-    function makeBestMove() {
-      var bestMove = getBestMove(game);
-      game.move(bestMove);
-      board.position(game.fen());
-      moveSound.play();
-    }
+        restartBtn.onclick = () => startGame();
 
-    function onDrop(source, target) {
-      var move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q'
-      });
-
-      if (move === null) return 'snapback';
-      moveSound.play();
-      window.setTimeout(makeBestMove, 250);
-    }
-
-    function onSnapEnd() {
-      board.position(game.fen());
-    }
-
-    board = Chessboard('board', {
-      draggable: true,
-      position: 'start',
-      onDragStart: onDragStart,
-      onDrop: onDrop,
-      onSnapEnd: onSnapEnd
-    });
-
-    // تقييم بسيط
-    function evaluateBoard(board) {
-      var total = 0;
-      var values = { p: 10, n: 30, b: 30, r: 50, q: 90, k: 900 };
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-          var piece = board[i][j];
-          if (piece) {
-            total += piece.color === 'w' ? values[piece.type] : -values[piece.type];
-          }
+        function startGame() {
+            board = [
+                ["bR","bN","bB","bQ","bK","bB","bN","bR"],
+                ["bP","bP","bP","bP","bP","bP","bP","bP"],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                [null,null,null,null,null,null,null,null],
+                ["wP","wP","wP","wP","wP","wP","wP","wP"],
+                ["wR","wN","wB","wQ","wK","wB","wN","wR"]
+            ];
+            turn = "w";
+            selected = null;
+            gameOver = false;
+            moveTargets = [];
+            drawBoard();
+            infoDiv.textContent = "Your turn!";
         }
-      }
-      return total;
-    }
 
-    // MiniMax بسيط
-    function minimax(game, depth, isMaximizingPlayer) {
-      if (depth === 0) {
-        return evaluateBoard(game.board());
-      }
+        function drawBoard() {
+            boardDiv.innerHTML = "";
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const sq = document.createElement("div");
+                    sq.classList.add("square");
+                    sq.classList.add((r + c) % 2 == 0 ? "white" : "black");
+                    sq.dataset.row = r;
+                    sq.dataset.col = c;
+                    if (board[r][c]) {
+                        if (board[r][c][0] === "w") {
+                            sq.innerHTML = `<span class="piece-white">${pieces[board[r][c]]}</span>`;
+                        } else {
+                            sq.innerHTML = `<span class="piece-black">${pieces[board[r][c]]}</span>`;
+                        }
+                    }
+                    if (moveTargets.some(([tr, tc]) => tr === r && tc === c)) {
+                        sq.classList.add("move-target");
+                        sq.onclick = () => playerMoveTo(r, c);
+                    } else if (selected && selected[0] === r && selected[1] === c) {
+                        sq.classList.add("selected");
+                        sq.onclick = () => selectPiece(r, c);
+                    } else if (turn === "w" && !gameOver && board[r][c] && board[r][c][0] === "w") {
+                        sq.onclick = () => selectPiece(r, c);
+                    }
+                    boardDiv.appendChild(sq);
+                }
+            }
+        }
 
-      var moves = game.moves();
-      if (isMaximizingPlayer) {
-        var maxEval = -Infinity;
-        for (var i = 0; i < moves.length; i++) {
-          game.move(moves[i]);
-          var eval = minimax(game, depth - 1, false);
-          game.undo();
-          maxEval = Math.max(eval, maxEval);
+        function selectPiece(r, c) {
+            if (turn !== "w" || gameOver) return;
+            selected = [r, c];
+            moveTargets = getAvailableMoves(board[r][c], r, c);
+            drawBoard();
         }
-        return maxEval;
-      } else {
-        var minEval = Infinity;
-        for (var i = 0; i < moves.length; i++) {
-          game.move(moves[i]);
-          var eval = minimax(game, depth - 1, true);
-          game.undo();
-          minEval = Math.min(eval, minEval);
-        }
-        return minEval;
-      }
-    }
 
-    function getBestMove(game) {
-      var moves = game.moves();
-      var bestMove = null;
-      var bestValue = -Infinity;
-      for (var i = 0; i < moves.length; i++) {
-        game.move(moves[i]);
-        var boardValue = minimax(game, 2, false); // العمق 2 (تقدر تزوده يخلي الكمبيوتر أذكى)
-        game.undo();
-        if (boardValue > bestValue) {
-          bestValue = boardValue;
-          bestMove = moves[i];
+        function playerMoveTo(r, c) {
+            if (!selected) return;
+            const [sr, sc] = selected;
+            movePiece(sr, sc, r, c);
+            moveSound.currentTime = 0; moveSound.play();
+            turn = "b";
+            selected = null;
+            moveTargets = [];
+            drawBoard();
+            setTimeout(computerMove, 700);
         }
-      }
-      return bestMove;
-    }
-  </script>
+
+        function movePiece(sr, sc, r, c) {
+            board[r][c] = board[sr][sc];
+            board[sr][sc] = null;
+            if (board[r][c] === "wK" || board[r][c] === "bK") {
+                checkGameOver();
+            }
+        }
+
+        function computerMove() {
+            if (gameOver) return;
+            let moves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] && board[r][c][0] === "b") {
+                        let avMoves = getAvailableMoves(board[r][c], r, c);
+                        avMoves.forEach(([tr, tc]) => {
+                            moves.push({from: [r, c], to: [tr, tc]});
+                        });
+                    }
+                }
+            }
+            if (moves.length > 0) {
+                const move = moves[Math.floor(Math.random() * moves.length)];
+                movePiece(...move.from, ...move.to);
+                moveSound.currentTime = 0; moveSound.play();
+                turn = "w";
+                drawBoard();
+                infoDiv.textContent = "Your turn!";
+            } else {
+                infoDiv.textContent = "Draw!";
+                drawSound.play();
+                gameOver = true;
+            }
+        }
+
+        function checkGameOver() {
+            let kings = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] === "wK") kings.push("w");
+                    if (board[r][c] === "bK") kings.push("b");
+                }
+            }
+            if (!kings.includes("w")) {
+                infoDiv.textContent = "Computer Wins!";
+                winSound.play();
+                gameOver = true;
+            } else if (!kings.includes("b")) {
+                infoDiv.textContent = "You Win 🎉";
+                winSound.play();
+                gameOver = true;
+            }
+        }
+
+        function isValidMove(piece, sr, sc, r, c) {
+            if (!piece) return false;
+            if (board[r][c] && board[r][c][0] === piece[0]) return false;
+            if (piece[1] === "P") {
+                let dir = piece[0] === "w" ? -1 : 1;
+                if (sc === c && !board[r][c]) {
+                    if (r - sr === dir) return true;
+                    if ((piece[0] === "w" && sr === 6 && r === 4 && !board[5][c]) ||
+                        (piece[0] === "b" && sr === 1 && r === 3 && !board[2][c])) {
+                        return true;
+                    }
+                }
+                if (Math.abs(sc - c) === 1 && r - sr === dir && board[r][c] && board[r][c][0] !== piece[0]) {
+                    return true;
+                }
+            }
+            if (piece[1] === "R") {
+                if (sr === r || sc === c) {
+                    if (clearPath(sr, sc, r, c)) return true;
+                }
+            }
+            if (piece[1] === "N") {
+                if ((Math.abs(sr - r) === 2 && Math.abs(sc - c) === 1) ||
+                    (Math.abs(sr - r) === 1 && Math.abs(sc - c) === 2)) {
+                    return true;
+                }
+            }
+            if (piece[1] === "B") {
+                if (Math.abs(sr - r) === Math.abs(sc - c)) {
+                    if (clearPath(sr, sc, r, c)) return true;
+                }
+            }
+            if (piece[1] === "Q") {
+                if ((sr === r || sc === c || Math.abs(sr - r) === Math.abs(sc - c)) &&
+                    clearPath(sr, sc, r, c)) {
+                    return true;
+                }
+            }
+            if (piece[1] === "K") {
+                if (Math.abs(sr - r) <= 1 && Math.abs(sc - c) <= 1) return true;
+            }
+            return false;
+        }
+
+        function clearPath(sr, sc, r, c) {
+            let dr = Math.sign(r - sr);
+            let dc = Math.sign(c - sc);
+            let currR = sr + dr, currC = sc + dc;
+            while (currR !== r || currC !== c) {
+                if (board[currR][currC]) return false;
+                currR += dr;
+                currC += dc;
+            }
+            return true;
+        }
+
+        function getAvailableMoves(piece, sr, sc) {
+            let moves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (isValidMove(piece, sr, sc, r, c)) {
+                        moves.push([r, c]);
+                    }
+                }
+            }
+            return moves;
+        }
+    </script>
 </body>
 </html>
